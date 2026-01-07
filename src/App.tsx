@@ -1,66 +1,66 @@
-import { useState } from "react";
-import { Sparkles, Smile } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Sparkles, RotateCcw } from "lucide-react";
 
 const themes = {
   joyful: {
     name: "Joyful",
     gradient: "from-pink-200 via-purple-200 to-orange-200",
     icon: "😊",
-    primary: "purple-600",
-    secondary: "pink-500",
-    text: "purple-800",
-    border: "purple-100",
-    focus: "purple-400",
-    button: "from-purple-500 to-pink-500",
-    buttonHover: "from-purple-600 to-pink-600",
+    primaryColor: "#9333ea",
+    secondaryColor: "#ec4899",
+    textColor: "#6b21a8",
+    borderColor: "rgba(147, 51, 234, 0.35)",
+    focusColor: "#c084fc",
+    buttonGradient: "from-purple-500 to-pink-500",
+    buttonHoverGradient: "from-purple-600 to-pink-600",
   },
   peaceful: {
     name: "Peaceful",
     gradient: "from-blue-100 via-cyan-50 to-teal-50",
     icon: "🕊️",
-    primary: "blue-600",
-    secondary: "cyan-500",
-    text: "blue-800",
-    border: "blue-100",
-    focus: "blue-400",
-    button: "from-blue-500 to-cyan-500",
-    buttonHover: "from-blue-600 to-cyan-600",
+    primaryColor: "#2563eb",
+    secondaryColor: "#06b6d4",
+    textColor: "#1e40af",
+    borderColor: "rgba(37, 99, 235, 0.35)",
+    focusColor: "#60a5fa",
+    buttonGradient: "from-blue-500 to-cyan-500",
+    buttonHoverGradient: "from-blue-600 to-cyan-600",
   },
   melancholy: {
     name: "Melancholy",
     gradient: "from-slate-200 via-blue-100 to-indigo-100",
     icon: "🌙",
-    primary: "indigo-600",
-    secondary: "slate-500",
-    text: "indigo-800",
-    border: "indigo-100",
-    focus: "indigo-400",
-    button: "from-indigo-500 to-blue-500",
-    buttonHover: "from-indigo-600 to-blue-600",
+    primaryColor: "#4f46e5",
+    secondaryColor: "#64748b",
+    textColor: "#3730a3",
+    borderColor: "rgba(79, 70, 229, 0.35)",
+    focusColor: "#818cf8",
+    buttonGradient: "from-indigo-500 to-blue-500",
+    buttonHoverGradient: "from-indigo-600 to-blue-600",
   },
   energetic: {
     name: "Energetic",
     gradient: "from-orange-100 via-amber-50 to-yellow-100",
     icon: "⚡",
-    primary: "orange-600",
-    secondary: "amber-500",
-    text: "orange-800",
-    border: "orange-100",
-    focus: "orange-400",
-    button: "from-orange-500 to-amber-500",
-    buttonHover: "from-orange-600 to-amber-600",
+    primaryColor: "#ea580c",
+    secondaryColor: "#f59e0b",
+    textColor: "#9a3412",
+    borderColor: "rgba(234, 88, 12, 0.35)",
+    focusColor: "#fb923c",
+    buttonGradient: "from-orange-500 to-amber-500",
+    buttonHoverGradient: "from-orange-600 to-amber-600",
   },
   mysterious: {
     name: "Mysterious",
     gradient: "from-purple-100 via-indigo-100 to-blue-100",
     icon: "🔮",
-    primary: "purple-600",
-    secondary: "indigo-500",
-    text: "purple-800",
-    border: "purple-100",
-    focus: "purple-400",
-    button: "from-purple-500 to-indigo-500",
-    buttonHover: "from-purple-600 to-indigo-600",
+    primaryColor: "#9333ea",
+    secondaryColor: "#6366f1",
+    textColor: "#6b21a8",
+    borderColor: "rgba(147, 51, 234, 0.35)",
+    focusColor: "#c084fc",
+    buttonGradient: "from-purple-500 to-indigo-500",
+    buttonHoverGradient: "from-purple-600 to-indigo-600",
   },
 };
 
@@ -76,8 +76,37 @@ const DreamAnalysisLanding = () => {
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [currentTheme, setCurrentTheme] =
     useState<keyof typeof themes>("joyful");
+  const [isEditing, setIsEditing] = useState(true);
 
   const theme = themes[currentTheme];
+
+  const themeMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        themeMenuRef.current &&
+        !themeMenuRef.current.contains(e.target as Node)
+      ) {
+        setShowThemeMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const clouds = useMemo(
+    () =>
+      Array.from({ length: 8 }, (_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        delay: `${Math.random() * 10}s`,
+        duration: `${15 + Math.random() * 20}s`,
+      })),
+    []
+  );
 
   const handleAnalyze = async () => {
     if (!dreamDescription.trim()) {
@@ -87,6 +116,7 @@ const DreamAnalysisLanding = () => {
 
     setIsAnalyzing(true);
     setAnalysis("");
+    setIsEditing(false);
 
     // Build the prompt for OpenAI
     const prompt = `You are an expert dream analyst with knowledge of Jungian psychology, symbolism, and the subconscious mind. Analyze the following dream in detail:
@@ -137,8 +167,8 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
 
       const data = await response.json();
       const analysisText = data.content
-        .filter((item: { type: string; }) => item.type === "text")
-        .map((item: { text: any; }) => item.text)
+        .filter((item: { type: string }) => item.type === "text")
+        .map((item: { text: any }) => item.text)
         .join("\n");
 
       setAnalysis(analysisText);
@@ -178,18 +208,9 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
     }
   };
 
-  // Floating clouds animation
-  const clouds = Array.from({ length: 8 }, (_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    delay: `${Math.random() * 10}s`,
-    duration: `${15 + Math.random() * 20}s`,
-  }));
-
   return (
     <div
-      className={`min-h-screen bg-gradient-to-br ${theme.gradient} p-4 md:p-8 relative overflow-hidden transition-all duration-700`}
+      className={`min-h-screen bg-linear-to-br ${theme.gradient} p-4 md:p-8 relative overflow-hidden transition-all duration-700`}
     >
       {/* Floating Clouds Background */}
       {clouds.map((cloud) => (
@@ -197,59 +218,55 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
           key={cloud.id}
           className="absolute pointer-events-none animate-float"
           style={{
-            left: cloud.left,
+            left: `-${Math.random() * 30}%`,
             top: cloud.top,
             animationDelay: cloud.delay,
             animationDuration: cloud.duration,
           }}
         >
-          <div className="w-24 h-16 bg-white opacity-30 rounded-full blur-xl"></div>
+          <div className="w-24 h-16 bg-white opacity-90 rounded-full blur-xl"></div>
         </div>
       ))}
 
       <style>{`
-        @keyframes float {
-          0%,
-          100% {
-            transform: translate(0, 0) scale(1);
-          }
-          25% {
-            transform: translate(30px, -20px) scale(1.1);
-          }
-          50% {
-            transform: translate(-20px, 30px) scale(0.9);
-          }
-          75% {
-            transform: translate(40px, 10px) scale(1.05);
-          }
+       @keyframes drift {
+        from {
+          transform: translateX(-120px);
         }
-        .animate-float {
-          animation: float linear infinite;
+        to {
+          transform: translateX(calc(100vw + 120px));
         }
+      }
+      .animate-float {
+        animation-name: drift;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+      }
       `}</style>
 
       {/* Header */}
-      <header className="max-w-6xl mx-auto mb-8 flex items-center justify-between relative z-10">
+      <header className=" mx-auto mb-6 flex items-center justify-between relative z-10">
         <div className="flex items-center gap-2">
           <Sparkles
-            className={`w-8 h-8 text-${theme.primary} transition-colors duration-700`}
+            className="w-6 h-6 transition-colors duration-700"
+            style={{ color: theme.primaryColor }}
           />
-          <h1
-            className={`text-2xl md:text-3xl font-bold text-${theme.text} transition-colors duration-700`}
+          <p
+            className="text-3xl font-bold transition-colors duration-700"
+            style={{ color: theme.textColor }}
           >
             DreamMotions
-          </h1>
+          </p>
         </div>
 
         {/* Theme Toggler */}
-        <div className="relative z-50">
+        <div ref={themeMenuRef} className="relative z-50">
           <button
+            className="w-12 h-12 p-2! rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-700"
+            style={{ backgroundColor: theme.primaryColor }}
             onClick={() => setShowThemeMenu(!showThemeMenu)}
-            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
           >
-            <Smile
-              className={`w-6 h-6 text-${theme.primary} transition-colors duration-700`}
-            />
+            <span className="text-2xl">{theme.icon}</span>
           </button>
 
           {showThemeMenu && (
@@ -277,17 +294,46 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
       </header>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-4xl mx-auto relative z-8">
         {/* Form Card */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8 transition-all duration-700">
+        <div className="relative bg-white/60 backdrop-blur-sm rounded-3xl shadow-2xl py-12 md:py-6 px-6 md:px-14 mb-8 transition-all duration-700">
+          {/* Edit / Reset Controls */}
+
+          <div className="absolute top-5 right-5 flex gap-2">
+            {/* Reset */}
+            <button
+              onClick={() => {
+                setDreamDescription("");
+                setEmotion("");
+                setIsRecurring("");
+                setDreamTime("");
+                setSymbols("");
+                setRecentEvents("");
+                setAnalysis("");
+                setIsEditing(true);
+              }}
+              title="Start over"
+              className="w-10 h-10 p-2! rounded-full bg-white/80 backdrop-blur-sm border 
+                 flex items-center justify-center transition hover:scale-105"
+              style={{ borderColor: theme.borderColor }}
+            >
+              <RotateCcw
+                className="w-5 h-5"
+                style={{ color: theme.textColor }}
+              />
+            </button>
+          </div>
+
           <div className="text-center mb-8">
             <h2
-              className={`text-4xl md:text-5xl font-bold text-${theme.text} mb-3 transition-colors duration-700`}
+              className="text-4xl md:text-5xl font-bold mb-3 transition-colors duration-700"
+              style={{ color: theme.textColor }}
             >
               Dream Analysis
             </h2>
             <p
-              className={`text-lg text-${theme.primary} transition-colors duration-700`}
+              className="text-lg transition-colors duration-700"
+              style={{ color: theme.primaryColor }}
             >
               Uncover the hidden meanings in your dreams
             </p>
@@ -296,7 +342,8 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
           {/* Dream Description - REQUIRED */}
           <div className="mb-6">
             <label
-              className={`block text-${theme.text} font-semibold mb-2 text-lg transition-colors duration-700`}
+              className="block font-semibold mb-2 text-lg transition-colors duration-700"
+              style={{ color: theme.textColor }}
             >
               Describe your dream <span className="text-red-500">*</span>
             </label>
@@ -305,14 +352,19 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
               onChange={(e) => setDreamDescription(e.target.value)}
               placeholder="I was floating through a garden filled with glowing butterflies..."
               required
-              className={`w-full h-32 px-4 py-3 border-2 border-${theme.border} rounded-2xl focus:outline-none focus:border-${theme.focus} resize-none text-gray-700 placeholder-${theme.border} transition-colors duration-700`}
+              className="w-full h-28 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all duration-700 bg-white/40"
+              style={{ borderColor: theme.borderColor }}
+              onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
+              onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
+              disabled={!isEditing}
             />
           </div>
 
           {/* Emotion Input - OPTIONAL */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <label
-              className={`block text-${theme.text} font-semibold mb-2 text-lg transition-colors duration-700`}
+              className="block font-semibold mb-2 text-lg transition-colors duration-700"
+              style={{ color: theme.textColor }}
             >
               What emotion does it invoke?
             </label>
@@ -321,14 +373,18 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
               value={emotion}
               onChange={(e) => setEmotion(e.target.value)}
               placeholder="Peace, anxiety, joy, confusion..."
-              className={`w-full px-4 py-3 border-2 border-${theme.border} rounded-2xl focus:outline-none focus:border-${theme.focus} text-gray-700 placeholder-${theme.border} transition-colors duration-700`}
+              className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all duration-700"
+              style={{ borderColor: theme.borderColor }}
+              onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
+              onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
             />
-          </div>
+          </div> */}
 
-          {/* Recurring Theme Radio - OPTIONAL */}
+          {/* Recurring Theme Radio  */}
           <div className="mb-6">
             <label
-              className={`block text-${theme.text} font-semibold mb-3 text-lg transition-colors duration-700`}
+              className="block font-semibold mb-2 text-lg transition-colors duration-700"
+              style={{ color: theme.textColor }}
             >
               Is this a recurring theme?
             </label>
@@ -340,10 +396,19 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
                   value="yes"
                   checked={isRecurring === "yes"}
                   onChange={(e) => setIsRecurring(e.target.value)}
-                  className={`w-5 h-5 text-${theme.primary} cursor-pointer transition-colors duration-700`}
+                  className="w-5 h-5 cursor-pointer transition-colors duration-700"
+                  style={{ accentColor: theme.primaryColor }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.focusColor)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.borderColor)
+                  }
+                  disabled={!isEditing}
                 />
                 <span
-                  className={`text-${theme.text} font-medium transition-colors duration-700`}
+                  className="font-medium transition-colors duration-700"
+                  style={{ color: theme.textColor }}
                 >
                   Yes
                 </span>
@@ -355,10 +420,18 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
                   value="no"
                   checked={isRecurring === "no"}
                   onChange={(e) => setIsRecurring(e.target.value)}
-                  className={`w-5 h-5 text-${theme.primary} cursor-pointer transition-colors duration-700`}
+                  className="w-5 h-5 cursor-pointer transition-colors duration-700"
+                  style={{ accentColor: theme.primaryColor }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.focusColor)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.borderColor)
+                  }
                 />
                 <span
-                  className={`text-${theme.text} font-medium transition-colors duration-700`}
+                  className="font-medium transition-colors duration-700"
+                  style={{ color: theme.textColor }}
                 >
                   No
                 </span>
@@ -366,17 +439,22 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
             </div>
           </div>
 
-          {/* Dream Time - NEW FIELD */}
+          {/* Dream Time */}
           <div className="mb-6">
             <label
-              className={`block text-${theme.text} font-semibold mb-2 text-lg transition-colors duration-700`}
+              className="block font-semibold mb-2 text-lg transition-colors duration-700"
+              style={{ color: theme.textColor }}
             >
               When did you have this dream?
             </label>
             <select
               value={dreamTime}
               onChange={(e) => setDreamTime(e.target.value)}
-              className={`w-full px-4 py-3 border-2 border-${theme.border} rounded-2xl focus:outline-none focus:border-${theme.focus} text-gray-700 bg-white transition-colors duration-700`}
+              className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all duration-700 bg-white/40"
+              style={{ borderColor: theme.borderColor }}
+              onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
+              onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
+              disabled={!isEditing}
             >
               <option value="">Select time...</option>
               <option value="last-night">Last night</option>
@@ -386,26 +464,11 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
             </select>
           </div>
 
-          {/* Key Symbols - NEW FIELD */}
-          <div className="mb-6">
-            <label
-              className={`block text-${theme.text} font-semibold mb-2 text-lg transition-colors duration-700`}
-            >
-              Key symbols or elements (optional)
-            </label>
-            <input
-              type="text"
-              value={symbols}
-              onChange={(e) => setSymbols(e.target.value)}
-              placeholder="e.g., water, animals, specific colors, people..."
-              className={`w-full px-4 py-3 border-2 border-${theme.border} rounded-2xl focus:outline-none focus:border-${theme.focus} text-gray-700 placeholder-${theme.border} transition-colors duration-700`}
-            />
-          </div>
-
-          {/* Recent Life Events - NEW FIELD */}
+          {/* Recent Life Events  */}
           <div className="mb-8">
             <label
-              className={`block text-${theme.text} font-semibold mb-2 text-lg transition-colors duration-700`}
+              className="block font-semibold mb-2 text-lg transition-colors duration-700"
+              style={{ color: theme.textColor }}
             >
               Any recent significant life events? (optional)
             </label>
@@ -413,20 +476,19 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
               value={recentEvents}
               onChange={(e) => setRecentEvents(e.target.value)}
               placeholder="Recent changes, stresses, celebrations, or concerns..."
-              className={`w-full h-20 px-4 py-3 border-2 border-${theme.border} rounded-2xl focus:outline-none focus:border-${theme.focus} resize-none text-gray-700 placeholder-${theme.border} transition-colors duration-700`}
+              className="w-full h-32 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all duration-700 bg-white/40"
+              style={{ borderColor: theme.borderColor }}
+              onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
+              onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
+              disabled={!isEditing}
             />
-            <p
-              className={`text-sm text-${theme.secondary} mt-2 transition-colors duration-700`}
-            >
-              This helps provide context for a more personalized analysis
-            </p>
           </div>
 
           {/* Analyze Button */}
           <button
             onClick={handleAnalyze}
             disabled={isAnalyzing}
-            className={`w-full bg-gradient-to-r ${theme.button} hover:${theme.buttonHover} text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 text-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed duration-700`}
+            className={`w-full bg-linear-to-r ${theme.buttonGradient} text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 text-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed duration-700`}
           >
             <Sparkles className="w-5 h-5" />
             {isAnalyzing ? "Analyzing..." : "Analyze Dream"}
@@ -437,17 +499,20 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
         {(isAnalyzing || analysis) && (
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12">
             <h3
-              className={`text-2xl font-bold text-${theme.text} mb-4 transition-colors duration-700`}
+              className="text-2xl font-bold mb-4 transition-colors duration-700"
+              style={{ color: theme.textColor }}
             >
               Your Dream Analysis
             </h3>
             {isAnalyzing ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <div
-                  className={`animate-spin rounded-full h-12 w-12 border-b-2 border-${theme.primary} mb-4 transition-colors duration-700`}
-                ></div>
+              <div
+                className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4 transition-colors duration-700"
+                style={{ borderColor: theme.primaryColor }}
+              >
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4 transition-colors duration-700"></div>
                 <p
-                  className={`text-${theme.primary} transition-colors duration-700`}
+                  className="transition-colors duration-700"
+                  style={{ color: theme.primaryColor }}
                 >
                   Analyzing your dream...
                 </p>
@@ -459,8 +524,8 @@ Since this is a recurring theme, your subconscious is emphasizing the importance
                     if (line.startsWith("**") && line.endsWith("**")) {
                       return (
                         <h4
-                          key={index}
-                          className={`text-${theme.text} font-bold mt-6 mb-2 text-lg transition-colors duration-700`}
+                          className="font-bold mt-6 mb-2 text-lg transition-colors duration-700"
+                          style={{ color: theme.textColor }}
                         >
                           {line.replace(/\*\*/g, "")}
                         </h4>
