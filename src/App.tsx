@@ -217,7 +217,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
       `}</style> */}
 
       {/* Header */}
-      <header className="max-w-5xl mx-auto mb-6 flex items-center justify-between relative z-10">
+      <header className="max-w-5xl mx-auto mb-3 flex items-center justify-between relative z-10">
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg bg-white/60 backdrop-blur-md"
@@ -323,7 +323,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
               </button>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-4">
               <h1
                 className="text-2xl! md:text-3xl font-bold mb-1 tracking-tight"
                 style={{ color: theme.textColor }}
@@ -351,7 +351,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                 onChange={(e) => setDreamDescription(e.target.value)}
                 placeholder="For example: I was floating through a garden filled with glowing butterflies..."
                 required
-                className="w-full h-32 md:h-40 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-sm md:text-base"
+                className="w-full h-28 md:h-32 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-sm md:text-base"
                 style={{ borderColor: theme.borderColor }}
                 onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
                 onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
