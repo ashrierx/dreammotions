@@ -1,8 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, RotateCcw, MoonStar, Palette } from "lucide-react";
+import {
+  Sparkles,
+  RotateCcw,
+  MoonStar,
+  Palette,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import ThemeBackground from "./ThemeBackground";
+import { DreamsSidebar } from "./components/sidebar/DreamSidebar";
+import { DreamDetailModal } from "./components/sidebar/DreamDetailModal";
+import { EditModal } from "./components/sidebar/EditModal";
+import { LoginModal } from "./components/navigation/LoginModal";
+import { UserMenu } from "./components/navigation/UserMenu";
+import { AnalysisPage } from "./components/views/AnalysisPage";
 
 const themes = {
   joyful: {
@@ -67,6 +78,47 @@ const themes = {
   },
 };
 
+export interface FormData {
+  dream: string;
+  emotion: string;
+  recurring: string;
+}
+export interface User {
+  name: string;
+  email: string;
+}
+
+export interface DreamEntry {
+  id: string;
+  date: string;
+  dream: string;
+  emotion: string;
+  recurring: string;
+  interpretation: string;
+}
+
+export type View = "home" | "analysis";
+
+export type Theme =
+  | "joyful"
+  | "peaceful"
+  | "melancholy"
+  | "energetic"
+  | "mysterious";
+
+export interface ThemeConfig {
+  name: string;
+  gradient: string;
+  icon: string;
+  primaryColor: string;
+  secondaryColor: string;
+  textColor: string;
+  borderColor: string;
+  focusColor: string;
+  buttonGradient: string;
+  buttonHoverGradient: string;
+}
+
 const DreamAnalysisLanding = () => {
   const [dreamDescription, setDreamDescription] = useState("");
   const [emotion, setEmotion] = useState("");
@@ -80,6 +132,20 @@ const DreamAnalysisLanding = () => {
   const [currentTheme, setCurrentTheme] =
     useState<keyof typeof themes>("mysterious");
   const [isEditing, setIsEditing] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
+    dream: "",
+    emotion: "",
+    recurring: "",
+  });
+  // const [showResult, setShowResult] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  // const [result, setResult] = useState("");
+  const [dreams, setDreams] = useState<DreamEntry[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedDream, setSelectedDream] = useState<DreamEntry | null>(null);
+  const [currentView, setCurrentView] = useState<View>("home");
 
   const theme = themes[currentTheme];
 
@@ -181,42 +247,72 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
     }
   };
 
+  const handleSaveEdit = (data: FormData) => {
+    setFormData(data);
+    setShowModal(false);
+    // Re-analyze with updated data
+    // handleAnalyze(data);
+  };
+
+  const handleLogin = (user: User) => {
+    setUser(user);
+    setShowLoginModal(false);
+    // Load mock dreams for demo purposes
+    const mockDreams: DreamEntry[] = [
+      {
+        id: "1",
+        date: new Date(Date.now() - 86400000).toISOString(),
+        dream:
+          "I was flying over a vast ocean, feeling completely free and weightless.",
+        emotion: "joy",
+        recurring: "no",
+        interpretation:
+          "Flying dreams often represent a desire for freedom and escape from daily pressures. The ocean symbolizes your emotional depth and the vastness of possibilities ahead.",
+      },
+      {
+        id: "2",
+        date: new Date(Date.now() - 172800000).toISOString(),
+        dream: "I was in a dark forest, unable to find my way out.",
+        emotion: "anxiety",
+        recurring: "yes",
+        interpretation:
+          "Being lost in a forest often reflects feelings of confusion or uncertainty in your waking life. The recurring nature suggests unresolved concerns that need attention.",
+      },
+      {
+        id: "3",
+        date: new Date(Date.now() - 259200000).toISOString(),
+        dream: "I was reuniting with old friends in a beautiful garden.",
+        emotion: "nostalgia",
+        recurring: "no",
+        interpretation:
+          "Gardens represent growth and nurturing. Reuniting with friends suggests a longing for past connections or simpler times. This reflects your appreciation for meaningful relationships.",
+      },
+    ];
+    setDreams(mockDreams);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setDreams([]);
+    setSidebarOpen(false);
+  };
+
+  const handleSelectDream = (dream: DreamEntry) => {
+    setSelectedDream(dream);
+  };
+
+  // const handleDeleteDream = (id: string) => {
+  //   setDreams(dreams.filter((d) => d.id !== id));
+  //   if (selectedDream?.id === id) {
+  //     setSelectedDream(null);
+  //   }
+  // };
+
   return (
     <div
       className={`min-h-screen bg-linear-to-br ${theme.gradient} p-4 md:p-8 relative overflow-hidden transition-all duration-700`}
     >
       <ThemeBackground themeName={currentTheme} />
-      {/* Floating Clouds */}
-      {/* {clouds.map((cloud) => (
-        <div
-          key={cloud.id}
-          className="absolute pointer-events-none select-none will-change-transform animate-[float_18s_ease-in-out_infinite]"
-          style={{
-            left: cloud.left,
-            top: cloud.top,
-            animationDuration: cloud.duration,
-            animationDelay: cloud.delay,
-            transform: `scale(${cloud.scale})`,
-            filter: cloud.scale < 0.8 ? "blur(1px)" : "none",
-          }}
-        >
-          <svg
-            className="text-white/40 w-24 h-16"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M17.5,19c-3.037,0-5.5-2.463-5.5-5.5c0-0.007,0-0.013,0-0.02C11.362,13.84,10.697,14,10,14c-2.209,0-4-1.791-4-4 c0-2.198,1.779-3.978,3.974-4C10.147,4.018,11.055,3,12.5,3c1.933,0,3.5,1.567,3.5,3.5c0,0.066-0.003,0.131-0.007,0.197 C16.339,6.257,16.904,6,17.5,6c2.485,0,4.5,2.015,4.5,4.5S19.985,15,17.5,15" />
-          </svg>
-        </div>
-      ))}
-
-      <style>{`
-        @keyframes float {
-          0% { transform: translate3d(0,0,0); }
-          50% { transform: translate3d(20px,-15px,0); }
-          100% { transform: translate3d(0,0,0); }
-        }
-      `}</style> */}
 
       {/* Header */}
       <header className="max-w-5xl mx-auto mb-5 flex items-center justify-between relative z-10">
@@ -243,126 +339,149 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
           </div>
         </div>
 
-        {/* Theme Toggler */}
-        <div ref={themeMenuRef} className="relative z-10">
-          <button
-            className="group w-9 h-9 rounded-full shadow-lg flex items-center justify-center bg-white/70 backdrop-blur-md border transition-all duration-300 hover:shadow-xl"
-            style={{ borderColor: theme.borderColor }}
-            onClick={() => setShowThemeMenu((p) => !p)}
-          >
-            <span className="text-xl group-hover:scale-110 transition-transform">
-              {theme.icon}
-            </span>
-          </button>
+        <div className="flex items-center gap-3">
+          {/* Theme Toggler */}
+          <div ref={themeMenuRef} className="relative z-10">
+            <button
+              className="group w-9 h-9 rounded-full shadow-lg flex items-center justify-center bg-white/70 backdrop-blur-md border transition-all duration-300 hover:shadow-xl"
+              style={{ borderColor: theme.borderColor }}
+              onClick={() => setShowThemeMenu((p) => !p)}
+            >
+              <span className="text-xl group-hover:scale-110 transition-transform">
+                {theme.icon}
+              </span>
+            </button>
 
-          {showThemeMenu && (
-            <div className="absolute right-0 mt-3 bg-white rounded-2xl shadow-2xl p-3 w-60 border border-gray-100">
-              <div className="flex items-center gap-2 px-2 pb-2 border-b border-gray-100 mb-2">
-                <Palette className="w-4 h-4 text-gray-500" />
-                <span className="text-xs uppercase tracking-wide text-gray-500">
-                  Dream palette
-                </span>
+            {showThemeMenu && (
+              <div className="absolute right-0 mt-3 bg-white rounded-2xl shadow-2xl p-3 w-60 border border-gray-100">
+                <div className="flex items-center gap-2 px-2 pb-2 border-b border-gray-100 mb-2">
+                  <Palette className="w-4 h-4 text-gray-500" />
+                  <span className="text-xs uppercase tracking-wide text-gray-500">
+                    Dream palette
+                  </span>
+                </div>
+                {Object.entries(themes).map(([key, themeOption]) => {
+                  const active = key === currentTheme;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setCurrentTheme(key as keyof typeof themes);
+                        setShowThemeMenu(false);
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 p-2.5 rounded-xl text-sm transition-colors ${
+                        active ? "bg-gray-100" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{themeOption.icon}</span>
+                        <span className="text-gray-700 font-medium">
+                          {themeOption.name}
+                        </span>
+                      </div>
+                      {active && (
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: theme.primaryColor }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-              {Object.entries(themes).map(([key, themeOption]) => {
-                const active = key === currentTheme;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setCurrentTheme(key as keyof typeof themes);
-                      setShowThemeMenu(false);
-                    }}
-                    className={`w-full flex items-center justify-between gap-3 p-2.5 rounded-xl text-sm transition-colors ${
-                      active ? "bg-gray-100" : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{themeOption.icon}</span>
-                      <span className="text-gray-700 font-medium">
-                        {themeOption.name}
-                      </span>
-                    </div>
-                    {active && (
-                      <span
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: theme.primaryColor }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* User Menu */}
+          <UserMenu
+            user={user}
+            onLogin={() => setShowLoginModal(true)}
+            onLogout={handleLogout}
+            onViewPastDreams={
+              user ? () => setSidebarOpen(!sidebarOpen) : undefined
+            }
+            onToggleAnalysis={() =>
+              setCurrentView(currentView === "home" ? "analysis" : "home")
+            }
+            currentView={currentView}
+            theme={theme}
+          />
         </div>
       </header>
 
-      {/* Main Content: two-column on md+ */}
-      <main className="max-w-5xl mx-auto relative z-9">
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-          {/* Form Card */}
-          <section className="relative bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl py-8 px-6 md:px-8 border border-white/60">
-            {/* Edit / Reset */}
-            <div className="absolute top-4 right-4 flex gap-2">
-              <button
-                onClick={() => {
-                  setDreamDescription("");
-                  setEmotion("");
-                  setIsRecurring("");
-                  setDreamTime("");
-                  setSymbols("");
-                  setRecentEvents("");
-                  setAnalysis("");
-                  setIsEditing(true);
-                }}
-                title="Start over"
-                className="w-9 h-9 rounded-full p-2! bg-white/90 border flex items-center justify-center hover:scale-105 transition"
-                style={{ borderColor: theme.borderColor }}
-              >
-                <RotateCcw
-                  className="w-4 h-4"
+      {/* Main Content */}
+      {currentView === "home" ? (
+        <main className="max-w-5xl mx-auto relative z-9">
+          <div className="grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+            {/* Form Card */}
+            <section className="relative bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl py-8 px-6 md:px-8 border border-white/60">
+              {/* Edit / Reset */}
+              <div className="absolute top-4 right-4 flex gap-2">
+                <button
+                  onClick={() => {
+                    setDreamDescription("");
+                    setEmotion("");
+                    setIsRecurring("");
+                    setDreamTime("");
+                    setSymbols("");
+                    setRecentEvents("");
+                    setAnalysis("");
+                    setIsEditing(true);
+                  }}
+                  title="Start over"
+                  className="w-9 h-9 rounded-full p-2! bg-white/90 border flex items-center justify-center hover:scale-105 transition"
+                  style={{ borderColor: theme.borderColor }}
+                >
+                  <RotateCcw
+                    className="w-4 h-4"
+                    style={{ color: theme.textColor }}
+                  />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <h1
+                  className="text-xl! md:text-3xl font-bold mb-1 tracking-tight"
                   style={{ color: theme.textColor }}
+                >
+                  Dream analysis
+                </h1>
+                <p
+                  className="text-xs text-gray-600"
+                  style={{ color: theme.primaryColor }}
+                >
+                  Describe your dream and receive a reflective, symbolic
+                  reading.
+                </p>
+              </div>
+
+              {/* Dream Description */}
+              <div className="mb-3">
+                <label
+                  className="block font-semibold mb-2 text-xs"
+                  style={{ color: theme.textColor }}
+                >
+                  Dream narrative <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={dreamDescription}
+                  onChange={(e) => setDreamDescription(e.target.value)}
+                  placeholder="For example: I was floating through a garden filled with glowing butterflies..."
+                  required
+                  className="w-full h-20 md:h-26 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-xs"
+                  style={{ borderColor: theme.borderColor }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.focusColor)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.borderColor)
+                  }
+                  disabled={!isEditing}
                 />
-              </button>
-            </div>
+              </div>
 
-            <div className="mb-4">
-              <h1
-                className="text-xl! md:text-3xl font-bold mb-1 tracking-tight"
-                style={{ color: theme.textColor }}
-              >
-                Dream analysis
-              </h1>
-              <p
-                className="text-xs text-gray-600"
-                style={{ color: theme.primaryColor }}
-              >
-                Describe your dream and receive a reflective, symbolic reading.
-              </p>
-            </div>
-
-            {/* Dream Description */}
-            <div className="mb-3">
-              <label
-                className="block font-semibold mb-2 text-xs"
-                style={{ color: theme.textColor }}
-              >
-                Dream narrative <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={dreamDescription}
-                onChange={(e) => setDreamDescription(e.target.value)}
-                placeholder="For example: I was floating through a garden filled with glowing butterflies..."
-                required
-                className="w-full h-20 md:h-26 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-xs"
-                style={{ borderColor: theme.borderColor }}
-                onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
-                onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
-                disabled={!isEditing}
-              />
-            </div>
-
-            {/* Emotion */}
-            {/* <div className="mb-5">
+              {/* Emotion */}
+              {/* <div className="mb-5">
               <label
                 className="block font-semibold mb-2 text-sm md:text-base"
                 style={{ color: theme.textColor }}
@@ -382,71 +501,79 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
               />
             </div> */}
 
-            {/* Recurring */}
-            <div className="mb-3">
-              <label
-                className="block font-semibold mb-2 text-xs"
-                style={{ color: theme.textColor }}
-              >
-                Is this a recurring theme?
-              </label>
-              <div className="flex gap-4 text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="recurring"
-                    value="yes"
-                    checked={isRecurring === "yes"}
-                    onChange={(e) => setIsRecurring(e.target.value)}
-                    className="w-4 h-4 cursor-pointer"
-                    style={{ accentColor: theme.primaryColor }}
-                    disabled={!isEditing}
-                  />
-                  <span className="font-medium text-gray-700 text-xs">Yes</span>
+              {/* Recurring */}
+              <div className="mb-3">
+                <label
+                  className="block font-semibold mb-2 text-xs"
+                  style={{ color: theme.textColor }}
+                >
+                  Is this a recurring theme?
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="recurring"
-                    value="no"
-                    checked={isRecurring === "no"}
-                    onChange={(e) => setIsRecurring(e.target.value)}
-                    className="w-4 h-4 cursor-pointer"
-                    style={{ accentColor: theme.primaryColor }}
-                    disabled={!isEditing}
-                  />
-                  <span className="font-medium text-gray-700 text-xs">No</span>
-                </label>
+                <div className="flex gap-4 text-sm">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="recurring"
+                      value="yes"
+                      checked={isRecurring === "yes"}
+                      onChange={(e) => setIsRecurring(e.target.value)}
+                      className="w-4 h-4 cursor-pointer"
+                      style={{ accentColor: theme.primaryColor }}
+                      disabled={!isEditing}
+                    />
+                    <span className="font-medium text-gray-700 text-xs">
+                      Yes
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="recurring"
+                      value="no"
+                      checked={isRecurring === "no"}
+                      onChange={(e) => setIsRecurring(e.target.value)}
+                      className="w-4 h-4 cursor-pointer"
+                      style={{ accentColor: theme.primaryColor }}
+                      disabled={!isEditing}
+                    />
+                    <span className="font-medium text-gray-700 text-xs">
+                      No
+                    </span>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            {/* Time */}
-            <div className="mb-3">
-              <label
-                className="block font-semibold mb-2 text-xs"
-                style={{ color: theme.textColor }}
-              >
-                When did you have this dream?
-              </label>
-              <select
-                value={dreamTime}
-                onChange={(e) => setDreamTime(e.target.value)}
-                className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none text-gray-700 transition-all bg-white/60 text-xs"
-                style={{ borderColor: theme.borderColor }}
-                onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
-                onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
-                disabled={!isEditing}
-              >
-                <option value="">Select time...</option>
-                <option value="last-night">Last night</option>
-                <option value="this-week">Earlier this week</option>
-                <option value="this-month">This month</option>
-                <option value="longer-ago">Longer ago (but memorable)</option>
-              </select>
-            </div>
+              {/* Time */}
+              <div className="mb-3">
+                <label
+                  className="block font-semibold mb-2 text-xs"
+                  style={{ color: theme.textColor }}
+                >
+                  When did you have this dream?
+                </label>
+                <select
+                  value={dreamTime}
+                  onChange={(e) => setDreamTime(e.target.value)}
+                  className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none text-gray-700 transition-all bg-white/60 text-xs"
+                  style={{ borderColor: theme.borderColor }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.focusColor)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.borderColor)
+                  }
+                  disabled={!isEditing}
+                >
+                  <option value="">Select time...</option>
+                  <option value="last-night">Last night</option>
+                  <option value="this-week">Earlier this week</option>
+                  <option value="this-month">This month</option>
+                  <option value="longer-ago">Longer ago (but memorable)</option>
+                </select>
+              </div>
 
-            {/* Symbols */}
-            {/* <div className="mb-5">
+              {/* Symbols */}
+              {/* <div className="mb-5">
               <label
                 className="block font-semibold mb-2 text-sm md:text-base"
                 style={{ color: theme.textColor }}
@@ -466,91 +593,135 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
               />
             </div> */}
 
-            {/* Recent events */}
-            <div className="mb-6">
-              <label
-                className="block font-semibold mb-2 text-xs"
-                style={{ color: theme.textColor }}
-              >
-                Recent life context (optional)
-              </label>
-              <textarea
-                value={recentEvents}
-                onChange={(e) => setRecentEvents(e.target.value)}
-                placeholder="Recent changes, stresses, celebrations, or concerns..."
-                className="w-full h-24 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-xs"
-                style={{ borderColor: theme.borderColor }}
-                onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
-                onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
-                disabled={!isEditing}
-              />
-            </div>
-
-            {/* Analyze button */}
-            <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing}
-              className={`w-full bg-linear-to-r ${theme.buttonGradient} hover:${theme.buttonHoverGradient} text-white font-semibold py-3.5 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 text-base shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed`}
-            >
-              <Sparkles className="w-5 h-5" />
-              {isAnalyzing ? "Analyzing your dream..." : "Analyze dream"}
-            </button>
-          </section>
-
-          {/* Analysis Panel */}
-          <section className="relative">
-            <div className="h-full rounded-3xl bg-white/75 backdrop-blur-xl shadow-2xl border border-white/60 p-6 md:p-7 flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h2
-                    className="text-lg md:text-xl font-semibold"
-                    style={{ color: theme.textColor }}
-                  >
-                    Your dream analysis
-                  </h2>
-                  <p className="text-xs text-gray-500">
-                    Generated reflection, symbolism, and practical insights.
-                  </p>
-                </div>
+              {/* Recent events */}
+              <div className="mb-6">
+                <label
+                  className="block font-semibold mb-2 text-xs"
+                  style={{ color: theme.textColor }}
+                >
+                  Recent life context (optional)
+                </label>
+                <textarea
+                  value={recentEvents}
+                  onChange={(e) => setRecentEvents(e.target.value)}
+                  placeholder="Recent changes, stresses, celebrations, or concerns..."
+                  className="w-full h-24 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-xs"
+                  style={{ borderColor: theme.borderColor }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.focusColor)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.borderColor)
+                  }
+                  disabled={!isEditing}
+                />
               </div>
 
-              {isAnalyzing && (
-                <div className="flex flex-col items-center justify-center flex-1 py-6">
-                  <div
-                    className="mb-4 h-10 w-10 rounded-full border-2 border-t-transparent animate-spin"
-                    style={{ borderColor: theme.primaryColor }}
-                  />
-                  <p
-                    className="text-sm text-center text-gray-600"
-                    style={{ color: theme.primaryColor }}
-                  >
-                    Tuning in to the symbols of your dream...
-                  </p>
-                </div>
-              )}
+              {/* Analyze button */}
+              <button
+                onClick={handleAnalyze}
+                disabled={isAnalyzing}
+                className={`w-full bg-linear-to-r ${theme.buttonGradient} hover:${theme.buttonHoverGradient} text-white font-semibold py-3.5 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 text-base shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed`}
+              >
+                <Sparkles className="w-5 h-5" />
+                {isAnalyzing ? "Analyzing your dream..." : "Analyze dream"}
+              </button>
+            </section>
 
-              {!isAnalyzing && !analysis && (
-                <div className="flex flex-col items-center justify-center flex-1 text-center text-gray-400 text-sm px-4">
-                  <p>
-                    After you share your dream, your personalized analysis will
-                    appear here.
-                  </p>
-                </div>
-              )}
-
-              {!isAnalyzing && analysis && (
-                <div className="mt-2 overflow-y-auto max-h-[550px] pr-1">
-                  <div className="prose prose-sm md:prose-base prose-blue max-w-none text-xs">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {analysis}
-                    </ReactMarkdown>
+            {/* Analysis Panel */}
+            <section className="relative">
+              <div className="h-full rounded-3xl bg-white/75 backdrop-blur-xl shadow-2xl border border-white/60 p-6 md:p-7 flex flex-col">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2
+                      className="text-lg md:text-xl font-semibold"
+                      style={{ color: theme.textColor }}
+                    >
+                      Your dream analysis
+                    </h2>
+                    <p className="text-xs text-gray-500">
+                      Generated reflection, symbolism, and practical insights.
+                    </p>
                   </div>
                 </div>
-              )}
-            </div>
-          </section>
-        </div>
-      </main>
+
+                {isAnalyzing && (
+                  <div className="flex flex-col items-center justify-center flex-1 py-6">
+                    <div
+                      className="mb-4 h-10 w-10 rounded-full border-2 border-t-transparent animate-spin"
+                      style={{ borderColor: theme.primaryColor }}
+                    />
+                    <p
+                      className="text-sm text-center text-gray-600"
+                      style={{ color: theme.primaryColor }}
+                    >
+                      Tuning in to the symbols of your dream...
+                    </p>
+                  </div>
+                )}
+
+                {!isAnalyzing && !analysis && (
+                  <div className="flex flex-col items-center justify-center flex-1 text-center text-gray-400 text-sm px-4">
+                    <p>
+                      After you share your dream, your personalized analysis
+                      will appear here.
+                    </p>
+                  </div>
+                )}
+
+                {!isAnalyzing && analysis && (
+                  <div className="mt-2 overflow-y-auto max-h-[550px] pr-1">
+                    <div className="prose prose-sm md:prose-base prose-blue max-w-none text-xs">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {analysis}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+        </main>
+      ) : (
+        // Analytics Dashboard
+        <AnalysisPage
+          dreams={dreams}
+          theme={theme}
+          onBack={() => setCurrentView("home")}
+        />
+      )}
+
+      {/* Edit Modal */}
+      <EditModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        formData={formData}
+        onSave={handleSaveEdit}
+      />
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={handleLogin}
+      />
+
+      {/* Dreams Sidebar */}
+      {user && (
+        <DreamsSidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          dreams={dreams}
+          onSelectDream={handleSelectDream}
+        />
+      )}
+
+      {/* Dream Detail Modal */}
+      <DreamDetailModal
+        isOpen={selectedDream !== null}
+        onClose={() => setSelectedDream(null)}
+        dream={selectedDream}
+      />
     </div>
   );
 };
