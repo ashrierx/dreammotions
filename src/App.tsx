@@ -1,7 +1,8 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Sparkles, RotateCcw, MoonStar, Palette } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ThemeBackground from "./ThemeBackground";
 
 const themes = {
   joyful: {
@@ -98,21 +99,21 @@ const DreamAnalysisLanding = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const clouds = useMemo(
-    () =>
-      Array.from({ length: 8 }, (_, i) => {
-        const scale = 0.5 + Math.random();
-        return {
-          id: i,
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          delay: `${Math.random() * -20}s`,
-          duration: `${20 / scale}s`,
-          scale,
-        };
-      }),
-    []
-  );
+  // const clouds = useMemo(
+  //   () =>
+  //     Array.from({ length: 8 }, (_, i) => {
+  //       const scale = 0.5 + Math.random();
+  //       return {
+  //         id: i,
+  //         left: `${Math.random() * 100}%`,
+  //         top: `${Math.random() * 100}%`,
+  //         delay: `${Math.random() * -20}s`,
+  //         duration: `${20 / scale}s`,
+  //         scale,
+  //       };
+  //     }),
+  //   []
+  // );
 
   const handleAnalyze = async () => {
     if (!dreamDescription.trim()) {
@@ -180,10 +181,11 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
 
   return (
     <div
-      className={`min-h-screen bg-gradient-to-br ${theme.gradient} p-4 md:p-8 relative overflow-hidden transition-all duration-700`}
+      className={`min-h-screen bg-linear-to-br ${theme.gradient} p-4 md:p-8 relative overflow-hidden transition-all duration-700`}
     >
+      <ThemeBackground themeName={currentTheme} />
       {/* Floating Clouds */}
-      {clouds.map((cloud) => (
+      {/* {clouds.map((cloud) => (
         <div
           key={cloud.id}
           className="absolute pointer-events-none select-none will-change-transform animate-[float_18s_ease-in-out_infinite]"
@@ -212,7 +214,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
           50% { transform: translate3d(20px,-15px,0); }
           100% { transform: translate3d(0,0,0); }
         }
-      `}</style>
+      `}</style> */}
 
       {/* Header */}
       <header className="max-w-5xl mx-auto mb-6 flex items-center justify-between relative z-10">
@@ -323,7 +325,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
 
             <div className="mb-6">
               <h1
-                className="text-2xl md:text-3xl font-bold mb-1 tracking-tight"
+                className="text-2xl! md:text-3xl font-bold mb-1 tracking-tight"
                 style={{ color: theme.textColor }}
               >
                 Dream analysis
@@ -378,72 +380,68 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
               />
             </div> */}
 
-              {/* Recurring */}
-              <div className="mb-3">
-                <label
-                  className="block font-semibold mb-2 text-sm md:text-base"
-                  style={{ color: theme.textColor }}
-                >
-                  Is this a recurring theme?
+            {/* Recurring */}
+            <div className="mb-3">
+              <label
+                className="block font-semibold mb-2 text-sm md:text-base"
+                style={{ color: theme.textColor }}
+              >
+                Is this a recurring theme?
+              </label>
+              <div className="flex gap-4 text-sm">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="recurring"
+                    value="yes"
+                    checked={isRecurring === "yes"}
+                    onChange={(e) => setIsRecurring(e.target.value)}
+                    className="w-4 h-4 cursor-pointer"
+                    style={{ accentColor: theme.primaryColor }}
+                    disabled={!isEditing}
+                  />
+                  <span className="font-medium text-gray-700">Yes</span>
                 </label>
-                <div className="flex gap-4 text-sm">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="recurring"
-                      value="yes"
-                      checked={isRecurring === "yes"}
-                      onChange={(e) => setIsRecurring(e.target.value)}
-                      className="w-4 h-4 cursor-pointer"
-                      style={{ accentColor: theme.primaryColor }}
-                      disabled={!isEditing}
-                    />
-                    <span className="font-medium text-gray-700">Yes</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="recurring"
-                      value="no"
-                      checked={isRecurring === "no"}
-                      onChange={(e) => setIsRecurring(e.target.value)}
-                      className="w-4 h-4 cursor-pointer"
-                      style={{ accentColor: theme.primaryColor }}
-                      disabled={!isEditing}
-                    />
-                    <span className="font-medium text-gray-700">No</span>
-                  </label>
-                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="recurring"
+                    value="no"
+                    checked={isRecurring === "no"}
+                    onChange={(e) => setIsRecurring(e.target.value)}
+                    className="w-4 h-4 cursor-pointer"
+                    style={{ accentColor: theme.primaryColor }}
+                    disabled={!isEditing}
+                  />
+                  <span className="font-medium text-gray-700">No</span>
+                </label>
               </div>
+            </div>
 
-              {/* Time */}
-              <div className="mb-3">
-                <label
-                  className="block font-semibold mb-2 text-sm md:text-base"
-                  style={{ color: theme.textColor }}
-                >
-                  When did you have this dream?
-                </label>
-                <select
-                  value={dreamTime}
-                  onChange={(e) => setDreamTime(e.target.value)}
-                  className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none text-gray-700 transition-all bg-white/60 text-sm md:text-base"
-                  style={{ borderColor: theme.borderColor }}
-                  onFocus={(e) =>
-                    (e.target.style.borderColor = theme.focusColor)
-                  }
-                  onBlur={(e) =>
-                    (e.target.style.borderColor = theme.borderColor)
-                  }
-                  disabled={!isEditing}
-                >
-                  <option value="">Select time...</option>
-                  <option value="last-night">Last night</option>
-                  <option value="this-week">Earlier this week</option>
-                  <option value="this-month">This month</option>
-                  <option value="longer-ago">Longer ago (but memorable)</option>
-                </select>
-              </div>
+            {/* Time */}
+            <div className="mb-3">
+              <label
+                className="block font-semibold mb-2 text-sm md:text-base"
+                style={{ color: theme.textColor }}
+              >
+                When did you have this dream?
+              </label>
+              <select
+                value={dreamTime}
+                onChange={(e) => setDreamTime(e.target.value)}
+                className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none text-gray-700 transition-all bg-white/60 text-sm md:text-base"
+                style={{ borderColor: theme.borderColor }}
+                onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
+                onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
+                disabled={!isEditing}
+              >
+                <option value="">Select time...</option>
+                <option value="last-night">Last night</option>
+                <option value="this-week">Earlier this week</option>
+                <option value="this-month">This month</option>
+                <option value="longer-ago">Longer ago (but memorable)</option>
+              </select>
+            </div>
 
             {/* Symbols */}
             {/* <div className="mb-5">
@@ -533,7 +531,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                 <div className="flex flex-col items-center justify-center flex-1 text-center text-gray-400 text-sm px-4">
                   <p>
                     After you share your dream, your personalized analysis will
-                    appear here as formatted markdown.
+                    appear here.
                   </p>
                 </div>
               )}
