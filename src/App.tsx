@@ -217,20 +217,20 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
       `}</style> */}
 
       {/* Header */}
-      <header className="max-w-5xl mx-auto mb-3 flex items-center justify-between relative z-10">
+      <header className="max-w-5xl mx-auto mb-5 flex items-center justify-between relative z-10">
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg bg-white/60 backdrop-blur-md"
+            className="w-9 h-9 rounded-2xl flex items-center justify-center shadow-lg bg-white/60 backdrop-blur-md"
             style={{ border: `1px solid ${theme.borderColor}` }}
           >
             <MoonStar
-              className="w-6 h-6"
+              className="w-5 h-5"
               style={{ color: theme.primaryColor }}
             />
           </div>
           <div>
             <p
-              className="text-3xl font-semibold tracking-tight"
+              className="text-2xl font-semibold tracking-tight"
               style={{ color: theme.textColor }}
             >
               DreamMotions
@@ -244,11 +244,11 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
         {/* Theme Toggler */}
         <div ref={themeMenuRef} className="relative z-10">
           <button
-            className="group w-12 h-12 rounded-full shadow-lg flex items-center justify-center bg-white/70 backdrop-blur-md border transition-all duration-300 hover:shadow-xl"
+            className="group w-9 h-9 rounded-full shadow-lg flex items-center justify-center bg-white/70 backdrop-blur-md border transition-all duration-300 hover:shadow-xl"
             style={{ borderColor: theme.borderColor }}
             onClick={() => setShowThemeMenu((p) => !p)}
           >
-            <span className="text-2xl group-hover:scale-110 transition-transform">
+            <span className="text-xl group-hover:scale-110 transition-transform">
               {theme.icon}
             </span>
           </button>
@@ -325,13 +325,13 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
 
             <div className="mb-4">
               <h1
-                className="text-2xl! md:text-3xl font-bold mb-1 tracking-tight"
+                className="text-xl! md:text-3xl font-bold mb-1 tracking-tight"
                 style={{ color: theme.textColor }}
               >
                 Dream analysis
               </h1>
               <p
-                className="text-sm text-gray-600"
+                className="text-xs text-gray-600"
                 style={{ color: theme.primaryColor }}
               >
                 Describe your dream and receive a reflective, symbolic reading.
@@ -341,7 +341,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
             {/* Dream Description */}
             <div className="mb-3">
               <label
-                className="block font-semibold mb-2 text-sm md:text-base"
+                className="block font-semibold mb-2 text-xs"
                 style={{ color: theme.textColor }}
               >
                 Dream narrative <span className="text-red-500">*</span>
@@ -351,7 +351,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                 onChange={(e) => setDreamDescription(e.target.value)}
                 placeholder="For example: I was floating through a garden filled with glowing butterflies..."
                 required
-                className="w-full h-28 md:h-32 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-sm md:text-base"
+                className="w-full h-20 md:h-26 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-xs"
                 style={{ borderColor: theme.borderColor }}
                 onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
                 onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
@@ -383,7 +383,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
             {/* Recurring */}
             <div className="mb-3">
               <label
-                className="block font-semibold mb-2 text-sm md:text-base"
+                className="block font-semibold mb-2 text-xs"
                 style={{ color: theme.textColor }}
               >
                 Is this a recurring theme?
@@ -400,7 +400,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                     style={{ accentColor: theme.primaryColor }}
                     disabled={!isEditing}
                   />
-                  <span className="font-medium text-gray-700">Yes</span>
+                  <span className="font-medium text-gray-700 text-xs">Yes</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -413,7 +413,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                     style={{ accentColor: theme.primaryColor }}
                     disabled={!isEditing}
                   />
-                  <span className="font-medium text-gray-700">No</span>
+                  <span className="font-medium text-gray-700 text-xs">No</span>
                 </label>
               </div>
             </div>
@@ -421,7 +421,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
             {/* Time */}
             <div className="mb-3">
               <label
-                className="block font-semibold mb-2 text-sm md:text-base"
+                className="block font-semibold mb-2 text-xs"
                 style={{ color: theme.textColor }}
               >
                 When did you have this dream?
@@ -429,7 +429,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
               <select
                 value={dreamTime}
                 onChange={(e) => setDreamTime(e.target.value)}
-                className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none text-gray-700 transition-all bg-white/60 text-sm md:text-base"
+                className="w-full px-4 py-3 border-2 rounded-2xl focus:outline-none text-gray-700 transition-all bg-white/60 text-xs"
                 style={{ borderColor: theme.borderColor }}
                 onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
                 onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
@@ -467,7 +467,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
             {/* Recent events */}
             <div className="mb-6">
               <label
-                className="block font-semibold mb-2 text-sm md:text-base"
+                className="block font-semibold mb-2 text-xs"
                 style={{ color: theme.textColor }}
               >
                 Recent life context (optional)
@@ -476,7 +476,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                 value={recentEvents}
                 onChange={(e) => setRecentEvents(e.target.value)}
                 placeholder="Recent changes, stresses, celebrations, or concerns..."
-                className="w-full h-24 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-sm md:text-base"
+                className="w-full h-24 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-xs"
                 style={{ borderColor: theme.borderColor }}
                 onFocus={(e) => (e.target.style.borderColor = theme.focusColor)}
                 onBlur={(e) => (e.target.style.borderColor = theme.borderColor)}
@@ -488,7 +488,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing}
-              className={`w-full bg-gradient-to-r ${theme.buttonGradient} hover:${theme.buttonHoverGradient} text-white font-semibold py-3.5 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 text-base shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed`}
+              className={`w-full bg-linear-to-r ${theme.buttonGradient} hover:${theme.buttonHoverGradient} text-white font-semibold py-3.5 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 text-base shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               <Sparkles className="w-5 h-5" />
               {isAnalyzing ? "Analyzing your dream..." : "Analyze dream"}
@@ -538,7 +538,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
 
               {!isAnalyzing && analysis && (
                 <div className="mt-2 overflow-y-auto max-h-[550px] pr-1">
-                  <div className="prose prose-sm md:prose-base prose-blue max-w-none">
+                  <div className="prose prose-sm md:prose-base prose-blue max-w-none text-xs">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {analysis}
                     </ReactMarkdown>
