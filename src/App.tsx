@@ -164,11 +164,13 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
         body: JSON.stringify({ prompt }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to analyze");
+        const text = await response.text();
+        console.error("API error:", text);
+        throw new Error("API request failed");
       }
+
+      const data = await response.json();
 
       setAnalysis(data.text);
     } catch (error) {
