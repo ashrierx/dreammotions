@@ -1,10 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  Sparkles,
-  RotateCcw,
-  MoonStar,
-  Palette,
-} from "lucide-react";
+import { Sparkles, RotateCcw, MoonStar, Palette } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import ThemeBackground from "./ThemeBackground";
@@ -14,6 +9,8 @@ import { EditModal } from "./components/sidebar/EditModal";
 import { LoginModal } from "./components/navigation/LoginModal";
 import { UserMenu } from "./components/navigation/UserMenu";
 import { AnalysisPage } from "./components/views/AnalysisPage";
+import { useAuth } from "./store/AuthContext";
+import { getUserDreams, saveDream } from "./firebase/FirestoreService";
 
 const themes = {
   joyful: {
@@ -90,11 +87,14 @@ export interface User {
 
 export interface DreamEntry {
   id: string;
-  date: string;
   dream: string;
   emotion: string;
   recurring: string;
+  time: string;
+  symbols?: string;
+  recentEvents: string;
   interpretation: string;
+  date: string;
 }
 
 export type View = "home" | "analysis";
@@ -132,16 +132,13 @@ const DreamAnalysisLanding = () => {
   const [currentTheme, setCurrentTheme] =
     useState<keyof typeof themes>("mysterious");
   const [isEditing, setIsEditing] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     dream: "",
     emotion: "",
     recurring: "",
   });
-  // const [showResult, setShowResult] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  // const [result, setResult] = useState("");
   const [dreams, setDreams] = useState<DreamEntry[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedDream, setSelectedDream] = useState<DreamEntry | null>(null);
@@ -150,6 +147,8 @@ const DreamAnalysisLanding = () => {
   const theme = themes[currentTheme];
 
   const themeMenuRef = useRef<HTMLDivElement>(null);
+
+  const { user: firebaseUser, signOut } = useAuth();
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -164,6 +163,13 @@ const DreamAnalysisLanding = () => {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  useEffect(() => {
+    if (firebaseUser?.uid) {
+      // Load dreams from Firestore
+      getUserDreams(firebaseUser.uid).then(setDreams);
+    }
+  }, [firebaseUser?.uid]);
 
   // const clouds = useMemo(
   //   () =>
@@ -239,6 +245,30 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
       const data = await response.json();
 
       setAnalysis(data.text);
+
+      if (firebaseUser?.uid) {
+        const dreamData: Omit<DreamEntry, "id"> = {
+          dream: dreamDescription,
+          emotion: emotion || "not specified", // Provide default if empty
+          recurring: isRecurring || "no", // Provide default if empty
+          time: dreamTime || "not specified", // Provide default if empty
+          symbols: symbols || "", // Add if part of DreamEntry
+          recentEvents: recentEvents || "",
+          interpretation: data.text,
+          date: new Date().toISOString(),
+        };
+
+        const dreamId = await saveDream(firebaseUser.uid, dreamData);
+
+        // Add the new dream to the dreams array
+        setDreams((prev) => [
+          {
+            id: dreamId,
+            ...dreamData,
+          },
+          ...prev,
+        ]);
+      }
     } catch (error) {
       console.error(error);
       setAnalysis("Something went wrong. Please try again.");
@@ -254,45 +284,12 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
     // handleAnalyze(data);
   };
 
-  const handleLogin = (user: User) => {
-    setUser(user);
+  const handleLoginSuccess = () => {
     setShowLoginModal(false);
-    // Load mock dreams for demo purposes
-    const mockDreams: DreamEntry[] = [
-      {
-        id: "1",
-        date: new Date(Date.now() - 86400000).toISOString(),
-        dream:
-          "I was flying over a vast ocean, feeling completely free and weightless.",
-        emotion: "joy",
-        recurring: "no",
-        interpretation:
-          "Flying dreams often represent a desire for freedom and escape from daily pressures. The ocean symbolizes your emotional depth and the vastness of possibilities ahead.",
-      },
-      {
-        id: "2",
-        date: new Date(Date.now() - 172800000).toISOString(),
-        dream: "I was in a dark forest, unable to find my way out.",
-        emotion: "anxiety",
-        recurring: "yes",
-        interpretation:
-          "Being lost in a forest often reflects feelings of confusion or uncertainty in your waking life. The recurring nature suggests unresolved concerns that need attention.",
-      },
-      {
-        id: "3",
-        date: new Date(Date.now() - 259200000).toISOString(),
-        dream: "I was reuniting with old friends in a beautiful garden.",
-        emotion: "nostalgia",
-        recurring: "no",
-        interpretation:
-          "Gardens represent growth and nurturing. Reuniting with friends suggests a longing for past connections or simpler times. This reflects your appreciation for meaningful relationships.",
-      },
-    ];
-    setDreams(mockDreams);
   };
 
-  const handleLogout = () => {
-    setUser(null);
+  const handleLogout = async () => {
+    await signOut();
     setDreams([]);
     setSidebarOpen(false);
   };
@@ -394,11 +391,11 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
 
           {/* User Menu */}
           <UserMenu
-            user={user}
+            user={firebaseUser}
             onLogin={() => setShowLoginModal(true)}
             onLogout={handleLogout}
             onViewPastDreams={
-              user ? () => setSidebarOpen(!sidebarOpen) : undefined
+              firebaseUser ? () => setSidebarOpen(!sidebarOpen) : undefined
             }
             onToggleAnalysis={() =>
               setCurrentView(currentView === "home" ? "analysis" : "home")
@@ -703,11 +700,11 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onLogin={handleLogin}
+        onLogin={handleLoginSuccess}
       />
 
       {/* Dreams Sidebar */}
-      {user && (
+      {firebaseUser && (
         <DreamsSidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}

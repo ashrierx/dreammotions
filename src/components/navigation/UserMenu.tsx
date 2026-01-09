@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut, CircleUserRound, Menu, BarChart3 } from "lucide-react";
 import { useState } from "react";
-import type { User } from "../../App";
+import { useAuth } from "../../store/AuthContext";
+import type { User as FirebaseUser } from "firebase/auth";
 
 interface UserMenuProps {
-  user: User | null;
+  user: FirebaseUser | null;
   onLogin: () => void;
   onLogout: () => void;
   onViewPastDreams?: () => void;
@@ -23,14 +24,23 @@ export function UserMenu({
   theme,
 }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { signOut } = useAuth();
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
+  const getInitials = (user: FirebaseUser) => {
+    if (user.displayName) {
+      return user.displayName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .substring(0, 2);
+    }
+
+    if (user.email) {
+      return user.email[0].toUpperCase();
+    }
+
+    return "?";
   };
 
   if (!user) {
@@ -63,7 +73,7 @@ export function UserMenu({
         className="w-10 h-10 text-white rounded-full flex items-center justify-center shadow-lg"
         style={{ backgroundColor: theme?.primaryColor || "#9333ea" }}
       >
-        <span className="text-sm font-semibold">{getInitials(user.name)}</span>
+        <span className="text-sm font-semibold">{getInitials(user)}</span>
       </motion.button>
 
       <AnimatePresence>
@@ -75,7 +85,9 @@ export function UserMenu({
             className="absolute right-0 mt-2 p-3 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl min-w-[200px]"
           >
             <div className="px-3 py-2 border-b border-gray-200">
-              <p className="text-sm font-medium text-gray-900">{user.name}</p>
+              <p className="text-sm font-medium text-gray-900">
+                {user.displayName ?? "Anonymous"}
+              </p>
               <p className="text-xs text-gray-600">{user.email}</p>
             </div>
 
@@ -115,7 +127,8 @@ export function UserMenu({
               )}
 
               <button
-                onClick={() => {
+                onClick={async () => {
+                  await signOut();
                   onLogout();
                   setIsOpen(false);
                 }}

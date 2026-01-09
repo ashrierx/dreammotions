@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Method not allowed" });
@@ -31,20 +33,24 @@ export default async function handler(req, res) {
 
     const data = await openaiRes.json();
 
+    // ✅ Correct parsing for Responses API
     const text = data.output
-      ?.flatMap((o) => o.content || [])
-      ?.filter((c) => c.type === "output_text")
-      ?.map((c) => c.text)
-      ?.join("\n");
+      ?.map((o: any) =>
+        o.content
+          ?.filter((c: any) => c.type === "output_text")
+          ?.map((c: any) => c.text)
+          .join("")
+      )
+      .join("\n");
 
     if (!text) {
       console.error("Unexpected OpenAI response:", data);
       return res.status(500).json({ error: "No text returned" });
     }
 
-    res.status(200).json({ text });
+    return res.status(200).json({ text });
   } catch (err) {
     console.error("Analyze error:", err);
-    res.status(500).json({ error: "Failed to analyze dream" });
+    return res.status(500).json({ error: "Failed to analyze dream" });
   }
 }

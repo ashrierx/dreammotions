@@ -180,7 +180,7 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
                         width: `${(item.count / dreams.length) * 100}%`,
                       }}
                       transition={{ delay: 0.6 + index * 0.1, duration: 0.5 }}
-                      className="h-full bg-gradient-to-r from-purple-400 to-pink-400"
+                      className="h-full bg-linear-to-r from-purple-400 to-pink-400"
                     />
                   </div>
                   <span className="text-sm text-purple-700 min-w-[30px] text-right">
@@ -258,7 +258,7 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8 + index * 0.1 }}
-                className="p-4 bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl border border-pink-200"
+                className="p-4 bg-linear-to-br from-pink-50 to-purple-50 rounded-xl border border-pink-200"
               >
                 <div className="flex items-start justify-between mb-2">
                   <span

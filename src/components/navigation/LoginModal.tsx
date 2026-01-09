@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Sparkles } from "lucide-react";
-import type { User } from "../../App"
+import type { User } from "../../App";
+import { useAuth } from "../../store/AuthContext";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -9,28 +10,30 @@ interface LoginModalProps {
   onLogin: (user: User) => void;
 }
 
-export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
+export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { signIn, signUp } = useAuth();
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
-    // Mock login - in real app, this would call authentication API
-    const user: User = {
-      name: name || email.split("@")[0],
-      email: email,
-    };
-
-    onLogin(user);
-
-    // Reset form
-    setName("");
-    setEmail("");
-    setPassword("");
-    setIsSignUp(false);
+    try {
+      if (isSignUp) {
+        await signUp({ name, email, password });
+      } else {
+        await signIn({ email, password }, () => {
+          // Success callback
+          onClose();
+        });
+      }
+    } catch (err: any) {
+      setError(err.message || "Authentication failed");
+    }
   };
 
   return (
@@ -109,11 +112,12 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-5 h-5" />
                   {isSignUp ? "Sign Up" : "Sign In"}
                 </button>
+                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
               </form>
 
               {/* Toggle */}
