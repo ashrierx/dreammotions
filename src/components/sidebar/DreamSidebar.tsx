@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { X, Calendar, Sparkles } from "lucide-react";
+import { X, Calendar, Sparkles, Trash2 } from "lucide-react";
 import type { DreamEntry } from "../../App";
 
 interface DreamsSidebarProps {
@@ -7,6 +7,7 @@ interface DreamsSidebarProps {
   onClose: () => void;
   dreams: DreamEntry[];
   onSelectDream: (dream: DreamEntry) => void;
+  onDeleteDream: (dreamId: string) => void;
 }
 
 export function DreamsSidebar({
@@ -14,6 +15,7 @@ export function DreamsSidebar({
   onClose,
   dreams,
   onSelectDream,
+  onDeleteDream
 }: DreamsSidebarProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -51,7 +53,7 @@ export function DreamsSidebar({
                 <h2 className="text-xl text-purple-800">Past Dreams</h2>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-purple-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-purple-100 bg-purple-100! rounded-full transition-colors"
                 >
                   <X className="w-5 h-5 text-purple-600" />
                 </button>
@@ -82,15 +84,30 @@ export function DreamsSidebar({
                       onSelectDream(dream);
                       onClose();
                     }}
-                    className="w-full text-left p-4 bg-white/60 hover:bg-white/80 rounded-xl border border-purple-200/50 hover:border-purple-300 transition-all group"
+                    className="w-full text-left p-4 bg-white/60! hover:bg-white/80 rounded-xl border border-purple-200/50 hover:border-purple-300 transition-all group"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <span className="inline-block px-2 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs capitalize">
                         {dream.emotion}
                       </span>
-                      <div className="flex items-center gap-1 text-xs text-purple-500">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(dream.date)}
+
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 text-xs text-purple-500">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(dream.date)}
+                        </div>
+
+                        {/* Delete button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteDream(dream.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-red-50"
+                          aria-label="Delete dream"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500 hover:text-red-600" />
+                        </button>
                       </div>
                     </div>
                     <p className="text-sm text-purple-900 line-clamp-2 group-hover:text-purple-700 transition-colors">

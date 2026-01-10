@@ -98,7 +98,7 @@ export function UserMenu({
                     onViewPastDreams();
                     setIsOpen(false);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-left bg-white!"
                 >
                   <Menu
                     className="w-4 h-4"
@@ -114,7 +114,7 @@ export function UserMenu({
                     onToggleAnalysis();
                     setIsOpen(false);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-left bg-white!"
                 >
                   <BarChart3
                     className="w-4 h-4"
@@ -132,7 +132,7 @@ export function UserMenu({
                   onLogout();
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-left bg-white!"
               >
                 <LogOut className="w-4 h-4 text-gray-600" />
                 <span className="text-sm text-gray-700">Sign Out</span>

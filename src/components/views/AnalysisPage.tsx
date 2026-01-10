@@ -72,7 +72,7 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
     >
       <div className="flex items-center justify-between mb-8">
         <button
-          className="p-2 bg-white/60 backdrop-blur-lg rounded-full border border-white/40"
+          className="p-2 bg-white/60! backdrop-blur-lg rounded-full border border-white/40"
           onClick={onBack}
         >
           <ArrowLeft className="w-5 h-5 text-purple-600" />

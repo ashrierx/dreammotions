@@ -6,6 +6,7 @@ interface DreamDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   dream: DreamEntry | null;
+  onDeleteDream: (dreamId: string) => void;
 }
 
 export function DreamDetailModal({
@@ -67,7 +68,7 @@ export function DreamDetailModal({
                   </div>
                   <button
                     onClick={onClose}
-                    className="p-2 hover:bg-purple-100 rounded-full transition-colors"
+                    className="p-2 hover:bg-purple-100 bg-purple-100! rounded-full transition-colors"
                   >
                     <X className="w-6 h-6 text-purple-600" />
                   </button>

@@ -10,7 +10,7 @@ import { LoginModal } from "./components/navigation/LoginModal";
 import { UserMenu } from "./components/navigation/UserMenu";
 import { AnalysisPage } from "./components/views/AnalysisPage";
 import { useAuth } from "./store/AuthContext";
-import { getUserDreams, saveDream } from "./firebase/FirestoreService";
+import { getUserDreams, saveDream, deleteDream } from "./firebase/FirestoreService";
 
 const themes = {
   joyful: {
@@ -249,10 +249,10 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
       if (firebaseUser?.uid) {
         const dreamData: Omit<DreamEntry, "id"> = {
           dream: dreamDescription,
-          emotion: emotion || "not specified", // Provide default if empty
-          recurring: isRecurring || "no", // Provide default if empty
-          time: dreamTime || "not specified", // Provide default if empty
-          symbols: symbols || "", // Add if part of DreamEntry
+          emotion: emotion || "not specified",
+          recurring: isRecurring || "no",
+          time: dreamTime || "not specified",
+          symbols: symbols || "",
           recentEvents: recentEvents || "",
           interpretation: data.text,
           date: new Date().toISOString(),
@@ -298,6 +298,21 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
     setSelectedDream(dream);
   };
 
+  const handleDeleteDream = async (dreamId: string) => {
+    if (!firebaseUser) return;
+
+    const confirmed = confirm("Delete this dream permanently?");
+    if (!confirmed) return;
+
+    await deleteDream(firebaseUser.uid, dreamId);
+
+    setDreams((prev) => prev.filter((d) => d.id !== dreamId));
+
+    if (selectedDream?.id === dreamId) {
+      setSelectedDream(null);
+    }
+  };
+
   // const handleDeleteDream = (id: string) => {
   //   setDreams(dreams.filter((d) => d.id !== id));
   //   if (selectedDream?.id === id) {
@@ -340,7 +355,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
           {/* Theme Toggler */}
           <div ref={themeMenuRef} className="relative z-10">
             <button
-              className="group w-9 h-9 rounded-full shadow-lg flex items-center justify-center bg-white/70 backdrop-blur-md border transition-all duration-300 hover:shadow-xl"
+              className="group w-9 h-9 rounded-full shadow-lg flex items-center justify-center bg-white/70! backdrop-blur-md border transition-all duration-300 hover:shadow-xl"
               style={{ borderColor: theme.borderColor }}
               onClick={() => setShowThemeMenu((p) => !p)}
             >
@@ -367,7 +382,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                         setShowThemeMenu(false);
                       }}
                       className={`w-full flex items-center justify-between gap-3 p-2.5 rounded-xl text-sm transition-colors ${
-                        active ? "bg-gray-100" : "hover:bg-gray-50"
+                        active ? "bg-gray-100!" : "bg-gray-50!"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -426,7 +441,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                     setIsEditing(true);
                   }}
                   title="Start over"
-                  className="w-9 h-9 rounded-full p-2! bg-white/90 border flex items-center justify-center hover:scale-105 transition"
+                  className="w-9 h-9 rounded-full p-2! bg-white/90! border flex items-center justify-center hover:scale-105 transition"
                   style={{ borderColor: theme.borderColor }}
                 >
                   <RotateCcw
@@ -710,6 +725,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
           onClose={() => setSidebarOpen(false)}
           dreams={dreams}
           onSelectDream={handleSelectDream}
+          onDeleteDream={handleDeleteDream}
         />
       )}
 
@@ -718,6 +734,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
         isOpen={selectedDream !== null}
         onClose={() => setSelectedDream(null)}
         dream={selectedDream}
+        onDeleteDream={handleDeleteDream}
       />
     </div>
   );
