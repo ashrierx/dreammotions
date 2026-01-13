@@ -68,7 +68,7 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="relative z-8 w-full max-w-6xl mx-auto px-6 py-8"
+      className="relative z-8 w-full max-w-6xl mx-auto px-6 py-8 bg-white/40 rounded-md"
     >
       <div className="flex items-center justify-between mb-8">
         <button

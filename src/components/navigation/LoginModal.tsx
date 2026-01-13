@@ -64,7 +64,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-purple-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-purple-100 bg-purple-100! rounded-full transition-colors"
                 >
                   <X className="w-6 h-6 text-purple-600" />
                 </button>
@@ -80,7 +80,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Your name"
-                      className="w-full px-4 py-3 bg-white/70 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder:text-purple-300"
+                      className="w-full px-4 py-3 bg-white/70 border border-purple-200 text-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder:text-purple-300"
                       required
                     />
                   </div>
@@ -93,7 +93,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="w-full px-4 py-3 bg-white/70 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder:text-purple-300"
+                    className="w-full px-4 py-3 bg-white/70 border border-purple-200 text-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder:text-purple-300"
                     required
                   />
                 </div>
@@ -105,7 +105,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3 bg-white/70 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder:text-purple-300"
+                    className="w-full px-4 py-3 bg-white/70 border border-purple-200 text-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder:text-purple-300"
                     required
                   />
                 </div>
@@ -124,7 +124,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               <div className="mt-6 text-center">
                 <button
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-purple-600 hover:text-purple-800 transition-colors"
+                  className="text-purple-600 hover:text-purple-800 bg-purple-100! transition-colors"
                 >
                   {isSignUp
                     ? "Already have an account? Sign in"

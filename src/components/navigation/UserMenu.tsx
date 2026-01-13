@@ -51,7 +51,7 @@ export function UserMenu({
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={onLogin}
-        className="w-10 h-10 p-2! rounded-full flex items-center justify-center backdrop-blur-md shadow-lg transition-all"
+        className="w-10 h-10 p-2! bg-white! rounded-full flex items-center justify-center backdrop-blur-md shadow-lg transition-all"
         style={{ border: `1px solid ${theme?.borderColor || "#e5e7eb"}` }}
       >
         <CircleUserRound

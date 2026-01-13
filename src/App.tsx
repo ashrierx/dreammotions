@@ -10,7 +10,12 @@ import { LoginModal } from "./components/navigation/LoginModal";
 import { UserMenu } from "./components/navigation/UserMenu";
 import { AnalysisPage } from "./components/views/AnalysisPage";
 import { useAuth } from "./store/AuthContext";
-import { getUserDreams, saveDream, deleteDream } from "./firebase/FirestoreService";
+import {
+  getUserDreams,
+  saveDream,
+  deleteDream,
+} from "./firebase/FirestoreService";
+import { motion } from "motion/react";
 
 const themes = {
   joyful: {
@@ -143,6 +148,7 @@ const DreamAnalysisLanding = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedDream, setSelectedDream] = useState<DreamEntry | null>(null);
   const [currentView, setCurrentView] = useState<View>("home");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const theme = themes[currentTheme];
 
@@ -431,6 +437,8 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
               <div className="absolute top-4 right-4 flex gap-2">
                 <button
                   onClick={() => {
+                    setRefreshKey((k) => k + 1);
+
                     setDreamDescription("");
                     setEmotion("");
                     setIsRecurring("");
@@ -444,10 +452,17 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                   className="w-9 h-9 rounded-full p-2! bg-white/90! border flex items-center justify-center hover:scale-105 transition"
                   style={{ borderColor: theme.borderColor }}
                 >
-                  <RotateCcw
-                    className="w-4 h-4"
-                    style={{ color: theme.textColor }}
-                  />
+                  <motion.div
+                    key={refreshKey}
+                    initial={{ rotate: 0 }}
+                    animate={{ rotate: -720 }}
+                    transition={{ duration: 0.6, ease: "easeInOut" }}
+                  >
+                    <RotateCcw
+                      className="w-4 h-4"
+                      style={{ color: theme.textColor }}
+                    />
+                  </motion.div>
                 </button>
               </div>
 
