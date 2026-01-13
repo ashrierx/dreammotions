@@ -21,10 +21,14 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
   const emotionAnalysis = useMemo(() => {
     const emotionCount: { [key: string]: number } = {};
     dreams.forEach((dream) => {
-      const emotion = dream.emotion.toLowerCase();
+      const emotion =
+        dream.emotion && dream.emotion !== "not specified"
+          ? dream.emotion.toLowerCase()
+          : "unknown";
       emotionCount[emotion] = (emotionCount[emotion] || 0) + 1;
     });
     return Object.entries(emotionCount)
+      .filter(([emotion]) => emotion !== "unknown")
       .map(([emotion, count]) => ({ emotion, count }))
       .sort((a, b) => b.count - a.count);
   }, [dreams]);
@@ -130,7 +134,8 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
             <div>
               <p className="text-sm text-purple-600 mb-1">Top Emotion</p>
               <p className="text-2xl text-purple-900 capitalize">
-                {emotionAnalysis[0]?.emotion || "None"}
+                {emotionAnalysis.find((e) => e.emotion !== "unknown")
+                  ?.emotion || "None"}
               </p>
             </div>
             <div className="p-3 bg-orange-100 rounded-full">

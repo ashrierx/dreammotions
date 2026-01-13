@@ -8,6 +8,7 @@ import { DreamDetailModal } from "./components/sidebar/DreamDetailModal";
 import { EditModal } from "./components/sidebar/EditModal";
 import { LoginModal } from "./components/navigation/LoginModal";
 import { UserMenu } from "./components/navigation/UserMenu";
+import { WarningModal } from "./components/navigation/WarningModal";
 import { AnalysisPage } from "./components/views/AnalysisPage";
 import { useAuth } from "./store/AuthContext";
 import {
@@ -124,6 +125,13 @@ export interface ThemeConfig {
   buttonHoverGradient: string;
 }
 
+const extractPrimaryEmotion = (analysisText: string): string => {
+  const match = analysisText.match(/\*\*Primary Emotions?\*\*:\s*(.+)/i);
+  if (!match) return "unknown";
+
+  return match[1].split(",")[0].trim().toLowerCase();
+};
+
 const DreamAnalysisLanding = () => {
   const [dreamDescription, setDreamDescription] = useState("");
   const [emotion, setEmotion] = useState("");
@@ -149,6 +157,17 @@ const DreamAnalysisLanding = () => {
   const [selectedDream, setSelectedDream] = useState<DreamEntry | null>(null);
   const [currentView, setCurrentView] = useState<View>("home");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [warningModalConfig, setWarningModalConfig] = useState<{
+    title: string;
+    message: string;
+    type?: "warning" | "error" | "info";
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+  } | null>(null);
+  const [formError, setFormError] = useState("");
 
   const theme = themes[currentTheme];
 
@@ -195,10 +214,11 @@ const DreamAnalysisLanding = () => {
 
   const handleAnalyze = async () => {
     if (!dreamDescription.trim()) {
-      alert("Please describe your dream first!");
+      setFormError("Please describe your dream first!");
       return;
     }
 
+    setFormError("");
     setIsAnalyzing(true);
     setAnalysis("");
     setIsEditing(false);
@@ -221,17 +241,24 @@ ${dreamTime ? `When Dream Occurred: ${dreamTime}` : ""}
 ${symbols ? `Notable Symbols/Elements: ${symbols}` : ""}
 ${recentEvents ? `Recent Life Events: ${recentEvents}` : ""}
 
+In addition, explicitly identify the primary emotions present in the dream.
+- If emotions are mentioned by the user, refine or clarify them.
+- If not mentioned, infer them from the dream content.
+- Choose 1–3 core emotions.
+- List them clearly under a heading called **Primary Emotions**.
+
 Please provide a comprehensive analysis that includes:
-1. **Symbolic Interpretation**: What the main symbols and imagery might represent
-2. **Emotional Context**: How the emotions relate to the dream's meaning
-3. **Psychological Insights**: Potential connections to the dreamer's subconscious or waking life
-4. **Archetypal Themes**: Any universal patterns or archetypes present
+1. **Primary Emotions**: A short list of the core emotions present in the dream
+2. **Symbolic Interpretation**: What the main symbols and imagery might represent
+3. **Emotional Context**: How the emotions relate to the dream's meaning
+4. **Psychological Insights**: Potential connections to the dreamer's subconscious or waking life
+5. **Archetypal Themes**: Any universal patterns or archetypes present
 ${
   isRecurring === "yes"
-    ? "5. **Recurring Theme Analysis**: Why this theme keeps appearing and what it might be trying to communicate"
+    ? "6. **Recurring Theme Analysis**: Why this theme keeps appearing and what it might be trying to communicate"
     : ""
 }
-6. **Practical Insights**: Actionable reflections or questions for the dreamer to consider
+7. **Practical Insights**: Actionable reflections or questions for the dreamer to consider
 
 Keep the tone warm, insightful, and empowering. Format using markdown with bold headings.`;
 
@@ -255,7 +282,9 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
       if (firebaseUser?.uid) {
         const dreamData: Omit<DreamEntry, "id"> = {
           dream: dreamDescription,
-          emotion: emotion || "not specified",
+          emotion: emotion
+            ? emotion.toLowerCase()
+            : extractPrimaryEmotion(data.text),
           recurring: isRecurring || "no",
           time: dreamTime || "not specified",
           symbols: symbols || "",
@@ -307,24 +336,26 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
   const handleDeleteDream = async (dreamId: string) => {
     if (!firebaseUser) return;
 
-    const confirmed = confirm("Delete this dream permanently?");
-    if (!confirmed) return;
-
-    await deleteDream(firebaseUser.uid, dreamId);
-
-    setDreams((prev) => prev.filter((d) => d.id !== dreamId));
-
-    if (selectedDream?.id === dreamId) {
-      setSelectedDream(null);
-    }
+    setWarningModalConfig({
+      title: "Delete Dream",
+      message:
+        "Are you sure you want to delete this dream permanently? This action cannot be undone.",
+      type: "warning",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      showCancel: true,
+      onConfirm: async () => {
+        if (dreamId && firebaseUser) {
+          await deleteDream(firebaseUser.uid, dreamId);
+          setDreams((prev) => prev.filter((d) => d.id !== dreamId));
+          if (selectedDream?.id === dreamId) {
+            setSelectedDream(null);
+          }
+        }
+      },
+    });
+    setShowWarningModal(true);
   };
-
-  // const handleDeleteDream = (id: string) => {
-  //   setDreams(dreams.filter((d) => d.id !== id));
-  //   if (selectedDream?.id === id) {
-  //     setSelectedDream(null);
-  //   }
-  // };
 
   return (
     <div
@@ -492,19 +523,36 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                 </label>
                 <textarea
                   value={dreamDescription}
-                  onChange={(e) => setDreamDescription(e.target.value)}
+                  onChange={(e) => {
+                    setDreamDescription(e.target.value);
+                    if (formError) setFormError("");
+                  }}
                   placeholder="For example: I was floating through a garden filled with glowing butterflies..."
                   required
-                  className="w-full h-20 md:h-26 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-xs"
-                  style={{ borderColor: theme.borderColor }}
-                  onFocus={(e) =>
-                    (e.target.style.borderColor = theme.focusColor)
+                  className={`w-full h-20 md:h-26 px-4 py-3 border-2 rounded-2xl focus:outline-none resize-none text-gray-700 transition-all bg-white/60 text-xs ${
+                    formError ? "border-red-400" : ""
+                  }`}
+                  style={
+                    formError
+                      ? { borderColor: "#f87171" }
+                      : { borderColor: theme.borderColor }
                   }
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.focusColor;
+                    if (formError) setFormError("");
+                  }}
                   onBlur={(e) =>
-                    (e.target.style.borderColor = theme.borderColor)
+                    (e.target.style.borderColor = formError
+                      ? "#f87171"
+                      : theme.borderColor)
                   }
                   disabled={!isEditing}
                 />
+                {formError && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <span>⚠</span> {formError}
+                  </p>
+                )}
               </div>
 
               {/* Emotion */}
@@ -751,6 +799,23 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
         dream={selectedDream}
         onDeleteDream={handleDeleteDream}
       />
+
+      {/* Warning Modal */}
+      {warningModalConfig && (
+        <WarningModal
+          isOpen={showWarningModal}
+          onClose={() => {
+            setShowWarningModal(false);
+          }}
+          title={warningModalConfig.title}
+          message={warningModalConfig.message}
+          type={warningModalConfig.type}
+          confirmText={warningModalConfig.confirmText}
+          cancelText={warningModalConfig.cancelText}
+          onConfirm={warningModalConfig.onConfirm}
+          showCancel={warningModalConfig.showCancel}
+        />
+      )}
     </div>
   );
 };
