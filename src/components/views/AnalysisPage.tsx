@@ -2,7 +2,6 @@ import { motion } from "motion/react";
 import {
   Sparkles,
   TrendingUp,
-  Heart,
   Brain,
   Moon,
   ArrowLeft,
@@ -14,9 +13,14 @@ interface AnalysisPageProps {
   dreams: DreamEntry[];
   theme: ThemeConfig;
   onBack: () => void;
+  onSelectDream?: (dream: DreamEntry) => void;
 }
 
-export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
+export function AnalysisPage({
+  dreams,
+  onBack,
+  onSelectDream,
+}: AnalysisPageProps) {
   // Analyze dreams by emotion
   const emotionAnalysis = useMemo(() => {
     const emotionCount: { [key: string]: number } = {};
@@ -139,7 +143,7 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
               </p>
             </div>
             <div className="p-3 bg-orange-100 rounded-full">
-              <Heart className="w-6 h-6 text-orange-600" />
+              <Brain className="w-6 h-6 text-orange-600" />
             </div>
           </div>
         </motion.div>
@@ -215,12 +219,13 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
               </p>
             ) : (
               recentDreams.map((dream, index) => (
-                <motion.div
+                <motion.button
                   key={dream.id}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
-                  className="p-3 bg-white/50 rounded-lg border border-purple-200/50"
+                  onClick={() => onSelectDream?.(dream)}
+                  className="w-full text-left p-3 bg-white/50 rounded-lg border border-purple-200/50! hover:shadow-sm hover:border-purple-300 transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between mb-1">
                     <span
@@ -234,10 +239,10 @@ export function AnalysisPage({ dreams, onBack }: AnalysisPageProps) {
                       {formatDate(dream.date)}
                     </span>
                   </div>
-                  <p className="text-sm text-purple-900 line-clamp-2 mt-2">
+                  <p className="text-sm text-purple-900 line-clamp-2 mt-2 group-hover:text-purple-700 transition-colors">
                     {dream.dream}
                   </p>
-                </motion.div>
+                </motion.button>
               ))
             )}
           </div>

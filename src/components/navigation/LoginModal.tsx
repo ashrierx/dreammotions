@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Sparkles } from "lucide-react";
 import type { User } from "../../App";
@@ -17,6 +17,18 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [password, setPassword] = useState("");
   const { signIn, signUp } = useAuth();
   const [error, setError] = useState("");
+
+  // Clear form fields when modal opens or closes
+  useEffect(() => {
+    if (isOpen) {
+      // Reset form when modal opens
+      setName("");
+      setEmail("");
+      setPassword("");
+      setError("");
+      setIsSignUp(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

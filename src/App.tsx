@@ -189,6 +189,33 @@ const DreamAnalysisLanding = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Log out user when they leave the site
+  useEffect(() => {
+    if (!firebaseUser) return;
+
+    const handleBeforeUnload = () => {
+      // Sign out when user closes tab/window or navigates away
+      // Note: Async operations in beforeunload are unreliable,
+      // but we'll attempt it and also handle on unmount
+      signOut().catch(() => {
+        // Silently fail if async operation doesn't complete
+      });
+    };
+
+    // Listen for page unload (closing tab/window, navigating away, refreshing)
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    // Cleanup on component unmount
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+
+      // Sign out on component unmount (when navigating away in SPA)
+      if (firebaseUser) {
+        signOut().catch(console.error);
+      }
+    };
+  }, [firebaseUser, signOut]);
+
   useEffect(() => {
     if (firebaseUser?.uid) {
       // Load dreams from Firestore
@@ -763,6 +790,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
           dreams={dreams}
           theme={theme}
           onBack={() => setCurrentView("home")}
+          onSelectDream={handleSelectDream}
         />
       )}
 
