@@ -14,14 +14,11 @@ export function extractPrimaryEmotion(analysisText: string): string {
   // Normalize line endings and whitespace
   const text = analysisText.replace(/\r\n/g, "\n").trim();
 
-  console.log("🔍 Analyzing text for emotions...", text.slice(0, 200));
-
   // 1) Look for numbered section "1. **Primary Emotions**:"
   const numberedMatch = text.match(
     /(?:^|\n)\s*1\.\s*\*\*Primary Emotions?\*\*\s*:?\s*([^\n]+)/i
   );
   if (numberedMatch?.[1]) {
-    console.log("✅ Found numbered pattern:", numberedMatch[1]);
     const first = pickFirstEmotion(numberedMatch[1]);
     if (first) return first;
   }
@@ -31,7 +28,6 @@ export function extractPrimaryEmotion(analysisText: string): string {
     /\*\*Primary Emotions?\*\*\s*:?\s*([^\n]+)/i
   );
   if (sameLineMatch?.[1]) {
-    console.log("✅ Found same-line pattern:", sameLineMatch[1]);
     const first = pickFirstEmotion(sameLineMatch[1]);
     if (first) return first;
   }
@@ -41,7 +37,6 @@ export function extractPrimaryEmotion(analysisText: string): string {
     /\*\*Primary Emotions?\*\*\s*:?\s*\n+((?:[-*•]\s*[^\n]+\n?)+)/i
   );
   if (headingMatch?.[1]) {
-    console.log("✅ Found list pattern:", headingMatch[1]);
     const firstBullet = headingMatch[1].match(/[-*•]\s*([^\n]+)/);
     if (firstBullet?.[1]) {
       const first = pickFirstEmotion(firstBullet[1]);
@@ -85,7 +80,6 @@ export function extractPrimaryEmotion(analysisText: string): string {
     }
   }
 
-  console.log("❌ No emotion found, returning unknown");
   return "unknown";
 }
 
@@ -93,11 +87,6 @@ export function getDreamEmotion(
   dream: Pick<DreamEntry, "emotion" | "interpretation">
 ): string {
   const stored = (dream.emotion || "").trim().toLowerCase();
-
-  console.log("🧠 Emotion debug:", {
-    storedEmotion: dream.emotion,
-    interpretationPreview: dream.interpretation?.slice(0, 80),
-  });
 
   if (
     stored &&
@@ -107,12 +96,10 @@ export function getDreamEmotion(
     !stored.includes(",") &&
     !stored.includes(" and ")
   ) {
-    console.log("✅ Using stored emotion:", stored);
     return stored;
   }
 
   const extracted = extractPrimaryEmotion(dream.interpretation || "");
-  console.log("🔍 Extracted emotion:", extracted);
 
   return extracted;
 }
@@ -121,7 +108,7 @@ function pickFirstEmotion(raw: string): string | null {
   const clean = raw
     .replace(/\*\*/g, "")
     .replace(/`/g, "")
-    .replace(/[()]/g, "") 
+    .replace(/[()]/g, "")
     .replace(/^[-*•]\s*/, "")
     .replace(/\s+/g, " ")
     .trim();
