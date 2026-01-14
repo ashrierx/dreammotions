@@ -111,7 +111,7 @@ export function WarningModal({
                 {showCancel && (
                   <button
                     onClick={onClose}
-                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl transition-colors font-medium"
+                    className="px-6 py-3 bg-gray-200! hover:bg-gray-300 text-gray-700 rounded-xl transition-colors font-medium"
                   >
                     {cancelText}
                   </button>

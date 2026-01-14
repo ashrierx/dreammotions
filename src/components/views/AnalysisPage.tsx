@@ -1,13 +1,8 @@
 import { motion } from "motion/react";
-import {
-  Sparkles,
-  TrendingUp,
-  Brain,
-  Moon,
-  ArrowLeft,
-} from "lucide-react";
+import { Sparkles, TrendingUp, Brain, Moon, ArrowLeft } from "lucide-react";
 import type { DreamEntry, ThemeConfig } from "../../App";
 import { useMemo } from "react";
+import { getDreamEmotion } from "../../utils/emotion";
 
 interface AnalysisPageProps {
   dreams: DreamEntry[];
@@ -21,14 +16,14 @@ export function AnalysisPage({
   onBack,
   onSelectDream,
 }: AnalysisPageProps) {
+  const displayEmotion = (dream: DreamEntry) => getDreamEmotion(dream);
+
   // Analyze dreams by emotion
   const emotionAnalysis = useMemo(() => {
     const emotionCount: { [key: string]: number } = {};
     dreams.forEach((dream) => {
-      const emotion =
-        dream.emotion && dream.emotion !== "not specified"
-          ? dream.emotion.toLowerCase()
-          : "unknown";
+      const emotion = displayEmotion(dream);
+      console.log("Emotion: ", emotion);
       emotionCount[emotion] = (emotionCount[emotion] || 0) + 1;
     });
     return Object.entries(emotionCount)
@@ -225,15 +220,15 @@ export function AnalysisPage({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
                   onClick={() => onSelectDream?.(dream)}
-                  className="w-full text-left p-3 bg-white/50 rounded-lg border border-purple-200/50! hover:shadow-sm hover:border-purple-300 transition-all cursor-pointer group"
+                  className="w-full text-left p-3 bg-white/50! rounded-lg border border-purple-200/50! hover:shadow-sm hover:border-purple-300 transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between mb-1">
                     <span
                       className={`px-2 py-0.5 rounded text-xs capitalize ${getEmotionColor(
-                        dream.emotion
+                        displayEmotion(dream)
                       )}`}
                     >
-                      {dream.emotion}
+                      {displayEmotion(dream)}
                     </span>
                     <span className="text-xs text-purple-500">
                       {formatDate(dream.date)}
@@ -273,10 +268,10 @@ export function AnalysisPage({
                 <div className="flex items-start justify-between mb-2">
                   <span
                     className={`px-2 py-1 rounded-lg text-xs capitalize ${getEmotionColor(
-                      dream.emotion
+                      displayEmotion(dream)
                     )}`}
                   >
-                    {dream.emotion}
+                    {displayEmotion(dream)}
                   </span>
                   <span className="text-xs text-purple-500">
                     {formatDate(dream.date)}

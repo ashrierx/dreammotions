@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X, Calendar, Sparkles, Trash2 } from "lucide-react";
 import type { DreamEntry } from "../../App";
+import { getDreamEmotion } from "../../utils/emotion";
 
 interface DreamsSidebarProps {
   isOpen: boolean;
@@ -15,8 +16,10 @@ export function DreamsSidebar({
   onClose,
   dreams,
   onSelectDream,
-  onDeleteDream
+  onDeleteDream,
 }: DreamsSidebarProps) {
+  const displayEmotion = (dream: DreamEntry) => getDreamEmotion(dream);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -88,7 +91,7 @@ export function DreamsSidebar({
                   >
                     <div className="flex items-start justify-between mb-2">
                       <span className="inline-block px-2 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs capitalize">
-                        {dream.emotion}
+                        {displayEmotion(dream)}
                       </span>
 
                       <div className="flex items-center gap-2">
@@ -103,7 +106,7 @@ export function DreamsSidebar({
                             e.stopPropagation();
                             onDeleteDream(dream.id);
                           }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-red-50"
+                          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-2! rounded-md hover:bg-red-50 bg-white!"
                           aria-label="Delete dream"
                         >
                           <Trash2 className="w-4 h-4 text-red-500 hover:text-red-600" />

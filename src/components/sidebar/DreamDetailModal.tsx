@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X, Calendar, Sparkles } from "lucide-react";
 import type { DreamEntry } from "../../App";
+import { getDreamEmotion } from "../../utils/emotion";
 
 interface DreamDetailModalProps {
   isOpen: boolean;
@@ -53,7 +54,7 @@ export function DreamDetailModal({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-sm capitalize">
-                        {dream.emotion}
+                        {getDreamEmotion(dream)}
                       </span>
                       {dream.recurring === "yes" && (
                         <span className="inline-block px-3 py-1 bg-pink-100 text-pink-700 rounded-lg text-sm">

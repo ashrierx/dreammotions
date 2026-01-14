@@ -11,6 +11,7 @@ import { UserMenu } from "./components/navigation/UserMenu";
 import { WarningModal } from "./components/navigation/WarningModal";
 import { AnalysisPage } from "./components/views/AnalysisPage";
 import { useAuth } from "./store/AuthContext";
+import { extractPrimaryEmotion } from "./utils/emotion";
 import {
   getUserDreams,
   saveDream,
@@ -125,13 +126,6 @@ export interface ThemeConfig {
   buttonHoverGradient: string;
 }
 
-const extractPrimaryEmotion = (analysisText: string): string => {
-  const match = analysisText.match(/\*\*Primary Emotions?\*\*:\s*(.+)/i);
-  if (!match) return "unknown";
-
-  return match[1].split(",")[0].trim().toLowerCase();
-};
-
 const DreamAnalysisLanding = () => {
   const [dreamDescription, setDreamDescription] = useState("");
   const [emotion, setEmotion] = useState("");
@@ -193,28 +187,40 @@ const DreamAnalysisLanding = () => {
   useEffect(() => {
     if (!firebaseUser) return;
 
-    const handleBeforeUnload = () => {
-      // Sign out when user closes tab/window or navigates away
-      // Note: Async operations in beforeunload are unreliable,
-      // but we'll attempt it and also handle on unmount
-      signOut().catch(() => {
-        // Silently fail if async operation doesn't complete
-      });
+    const handleBeforeUnload = (_e: BeforeUnloadEvent) => {
+      // Only sign out if actually closing/navigating away
+      // Not just switching tabs or losing focus
+
+      // Store a timestamp when leaving
+      sessionStorage.setItem("lastActivity", Date.now().toString());
+
+      // Note: signOut here is unreliable because beforeunload
+      // might not complete async operations
     };
 
-    // Listen for page unload (closing tab/window, navigating away, refreshing)
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    // Cleanup on component unmount
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-
-      // Sign out on component unmount (when navigating away in SPA)
-      if (firebaseUser) {
-        signOut().catch(console.error);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        // User came back to the tab
+        const lastActivity = sessionStorage.getItem("lastActivity");
+        if (lastActivity) {
+          const timeSinceActivity = Date.now() - parseInt(lastActivity);
+          // If they've been gone less than 5 minutes, stay logged in
+          if (timeSinceActivity < 5 * 60 * 1000) {
+            sessionStorage.removeItem("lastActivity");
+          }
+        }
       }
     };
-  }, [firebaseUser, signOut]);
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // Remove unmount sign out - this was causing issues with tab switching
+    };
+  }, [firebaseUser]);
 
   useEffect(() => {
     if (firebaseUser?.uid) {
@@ -306,12 +312,17 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
 
       setAnalysis(data.text);
 
+      const extractedEmotion = extractPrimaryEmotion(data.text);
+
+      console.log("🧠 Emotion debug @ save:", {
+        userSelectedEmotion: emotion,
+        extractedEmotion,
+      });
+
       if (firebaseUser?.uid) {
         const dreamData: Omit<DreamEntry, "id"> = {
           dream: dreamDescription,
-          emotion: emotion
-            ? emotion.toLowerCase()
-            : extractPrimaryEmotion(data.text),
+          emotion: extractedEmotion,
           recurring: isRecurring || "no",
           time: dreamTime || "not specified",
           symbols: symbols || "",
@@ -338,6 +349,25 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
       setIsAnalyzing(false);
     }
   };
+
+  // Add this function near your other handlers
+  const clearDreamForm = () => {
+    setDreamDescription("");
+    setEmotion("");
+    setIsRecurring("");
+    setDreamTime("");
+    setSymbols("");
+    setRecentEvents("");
+    setAnalysis("");
+    setFormError("");
+  };
+
+  // Reset dream form when the view changes to 'analytics'
+  useEffect(() => {
+    if (currentView !== "home") {
+      clearDreamForm();
+    }
+  }, [currentView]);
 
   const handleSaveEdit = (data: FormData) => {
     setFormData(data);
@@ -750,8 +780,11 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
                 {isAnalyzing && (
                   <div className="flex flex-col items-center justify-center flex-1 py-6">
                     <div
-                      className="mb-4 h-10 w-10 rounded-full border-2 border-t-transparent animate-spin"
-                      style={{ borderColor: theme.primaryColor }}
+                      className="mb-4 h-10 w-10 rounded-full border-4 border-purple-300 border-t-transparent animate-spin [animation-duration:0.8s]"
+                      style={{
+                        borderTopColor: theme.primaryColor,
+                        boxShadow: `0 0 8px ${theme.primaryColor}55`,
+                      }}
                     />
                     <p
                       className="text-sm text-center text-gray-600"
@@ -773,7 +806,7 @@ Keep the tone warm, insightful, and empowering. Format using markdown with bold 
 
                 {!isAnalyzing && analysis && (
                   <div className="mt-2 overflow-y-auto max-h-[550px] pr-1">
-                    <div className="prose prose-sm md:prose-base prose-blue max-w-none text-xs">
+                    <div className="prose prose-sm md:prose-base prose-blue max-w-none text-xs text-black!">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {analysis}
                       </ReactMarkdown>
